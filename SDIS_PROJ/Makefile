@@ -13,7 +13,7 @@ BIN = -d bin/
 	$(JC) $(BIN) $(JFLAGS) $(CLASSPATH) $*.java
  
 CLIENTCLASSES = \
-    src/start/Client.java \
+    src/start/TestApp.java \
 
 SERVERCLASSES = \
 	src/p2p/Peer.java \
