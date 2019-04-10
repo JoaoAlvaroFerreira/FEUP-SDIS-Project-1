@@ -1,4 +1,4 @@
-package channels;
+
 
 public class MCBackup  {
 	MC mc;

@@ -1,4 +1,3 @@
-package messages;
 
 public class PutChunk {
 	Header header;

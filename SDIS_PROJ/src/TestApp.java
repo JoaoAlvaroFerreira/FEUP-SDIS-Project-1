@@ -1,4 +1,3 @@
-package start;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,7 +7,6 @@ import java.net.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import utils.RMI;
 
  
  
@@ -28,8 +26,17 @@ public class TestApp {
         try {
          
         	
-        	Registry registry = LocateRegistry.getRegistry("localhost");
-              RMI stub = (RMI) registry.lookup(peer_ap);
+        /* 	Registry registry = LocateRegistry.getRegistry("localhost");
+              RMI stub = (RMI) registry.lookup(peer_ap); */
+
+                       // Getting the registry 
+         Registry registry = LocateRegistry.getRegistry(null); 
+    
+         // Looking up the registry for the remote object 
+         RMI stub = (RMI) registry.lookup("Hello"); 
+    
+         // Calling the remote method using the obtained object 
+         stub.printMsg(); 
               
               
               System.out.println(args[0]);

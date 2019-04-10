@@ -1,4 +1,4 @@
-package messages;
+
 
 public class Header {
 	String messageType;

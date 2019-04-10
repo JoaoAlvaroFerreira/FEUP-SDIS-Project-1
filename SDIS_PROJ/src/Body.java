@@ -1,4 +1,3 @@
-package messages;
 
 public class Body {
 	public static final int MAX_CHUNK_SIZE = 64000;

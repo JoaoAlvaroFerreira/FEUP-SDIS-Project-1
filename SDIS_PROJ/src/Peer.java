@@ -1,4 +1,4 @@
-package p2p;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,8 +9,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import utils.RMI;
- 
+
 public class Peer implements RMI {
      
 
@@ -30,7 +29,7 @@ public class Peer implements RMI {
     
     public static void main(String[] args) throws UnknownHostException, InterruptedException { 
     	
-    	version = Double.parseDouble(args[0]);
+    	/* version = Double.parseDouble(args[0]);
         server_id = Integer.parseInt(args[1]);
     	peer_id = Integer.parseInt(args[2]);
     	mcAddr = args[3];
@@ -38,19 +37,22 @@ public class Peer implements RMI {
     	mdbAddr = args[5];
     	mdbPort = Integer.parseInt(args[6]);
     	mdrAddr = args[7];
-    	mdrPort = Integer.parseInt(args[8]);
+    	mdrPort = Integer.parseInt(args[8]); */
         
-      
+		System.out.println("teste");
         try {
         	
-			  Peer obj = new Peer();
-			  LocateRegistry.createRegistry()
-      	    RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);
+			Peer obj = new Peer();
 
-      	    Registry registry = LocateRegistry.getRegistry();
-      	    registry.bind(Integer.toString(peer_id), stub);
+      	   RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);  
+         
+         // Binding the remote object (stub) in the registry 
+         Registry registry = LocateRegistry.getRegistry(); 
+         
+         registry.bind("Hello", stub);  
+         System.err.println("Server ready"); 
 
-      	    System.err.println("Peer ready");
+
       	    
           
         } catch (Exception e) {
@@ -79,5 +81,9 @@ public class Peer implements RMI {
 		}
 		
 
-        }
+		}
+		
+		public void printMsg() {  
+			System.out.println("This is an example RMI program");  
+		 }  
 }

@@ -1,4 +1,3 @@
-package protocols;
 
 import java.nio.file.Path;
 
@@ -11,7 +10,7 @@ public class Delete extends Thread implements Runnable {
 	Path path;
 	
 	public Delete(String path){
-		this.path = Path.of(path);
+		//this.path = Path.of(path);
 		this.filename = this.path.getFileName().toString();
 	
 
