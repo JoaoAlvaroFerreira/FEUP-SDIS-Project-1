@@ -13,37 +13,46 @@ import utils.RMI;
  
 public class Peer implements RMI {
      
-    final static String INET_ADDR = "224.0.0.3";
-    final static int PORT = 8888;
- 
-    public static void main(String[] args) throws UnknownHostException, InterruptedException {
-        // Get the address that we are going to connect to.
-        InetAddress addr = InetAddress.getByName(INET_ADDR);
+
+    //final static int PORT = 8888;
+	private static double version;
+	private static int server_id;
+    private static int peer_id;
+    private static String mcAddr = "224.0.0.3";
+    private static int mcPort = 8888;
+    private static String mdbAddr;
+    private static int mdbPort;
+    private static String mdrAddr;
+    private static int mdrPort;
+    
+    private int peerID;
+    
+    public static void main(String[] args) throws UnknownHostException, InterruptedException { 
+    	
+    	version = Double.parseDouble(args[0]);
+        server_id = Integer.parseInt(args[1]);
+    	peer_id = Integer.parseInt(args[2]);
+    	mcAddr = args[3];
+    	mcPort = Integer.parseInt(args[4]);
+    	mdbAddr = args[5];
+    	mdbPort = Integer.parseInt(args[6]);
+    	mdrAddr = args[7];
+    	mdrPort = Integer.parseInt(args[8]);
+        
       
         // Open a new DatagramSocket, which will be used to send the data.
-        try (DatagramSocket serverSocket = new DatagramSocket()) {
+        try {
         	
         	  Peer obj = new Peer();
       	    RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);
 
       	    // Bind the remote object's stub in the registry
       	    Registry registry = LocateRegistry.getRegistry();
-      	    registry.bind("Hello", stub);
+      	    registry.bind(Integer.toString(peer_id), stub);
 
-      	    System.err.println("Server ready");
+      	    System.err.println("Peer ready");
       	    
-            for (int i = 0; i < 5; i++) {
-                String msg = "Sent message no " + i;
- 
-                // Create a packet that will contain the data
-                // (in the form of bytes) and send it.
-                DatagramPacket msgPacket = new DatagramPacket(msg.getBytes(),
-                        msg.getBytes().length, addr, PORT);
-                serverSocket.send(msgPacket);
-      
-                System.out.println("Server sent packet with msg: " + msg);
-                Thread.sleep(500);
-            }
+          
         } catch (Exception e) {
     	    System.err.println("Server exception: " + e.toString());
     	    e.printStackTrace();
