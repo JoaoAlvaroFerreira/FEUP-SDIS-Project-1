@@ -22,7 +22,25 @@ public class TestApp {
     	peer_ap = args[0];
         sub_protocol = args[1].toUpperCase();
         System.out.println(args[0]);
-        
+        if(sub_protocol == "BACKUP")
+        {
+            
+            replication_degree = Integer.parseInt(args[3]);
+            file_path = args[2];
+        }
+        else if(sub_protocol == "RESTORE")
+        {
+            file_path = args[2];
+        }
+        else if(sub_protocol == "DELETE")
+        {
+            file_path = args[2];
+        }
+        else if(sub_protocol == "RECLAIM")
+        {
+            disk_space = Double.parseDouble(args[2]);
+        }
+  
         try {
          
         	
@@ -36,8 +54,8 @@ public class TestApp {
          RMI stub = (RMI) registry.lookup("Hello"); 
     
          // Calling the remote method using the obtained object 
-         stub.printMsg(); 
-              
+         stub.operation(sub_protocol, file_path, replication_degree, disk_space);
+         
               
               System.out.println(args[0]);
         } catch (Exception e) {
@@ -46,24 +64,10 @@ public class TestApp {
         }
         
         System.out.println(args[0]);
-       if(sub_protocol == "BACKUP")
-       {
-    	   file_path = args[2];
-       }
-       else if(sub_protocol == "RESTORE")
-       {
-    	   file_path = args[2];
-       }
-       else if(sub_protocol == "DELETE")
-       {
-    	   file_path = args[2];
-       }
-       else if(sub_protocol == "RECLAIM")
-       {
-    	   disk_space = Double.parseDouble(args[2]);
-    	   replication_degree = Integer.parseInt(args[3]);
-       }
-       System.out.println(args[0]);
+     
+
+       
+
         
     }
 }
