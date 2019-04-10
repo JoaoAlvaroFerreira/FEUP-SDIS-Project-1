@@ -25,7 +25,8 @@ public class Peer implements RMI {
     private static String mdrAddr;
     private static int mdrPort;
     
-    private int peerID;
+	private int peerID;
+	
     
     public static void main(String[] args) throws UnknownHostException, InterruptedException { 
     	
@@ -40,13 +41,12 @@ public class Peer implements RMI {
     	mdrPort = Integer.parseInt(args[8]);
         
       
-        // Open a new DatagramSocket, which will be used to send the data.
         try {
         	
-        	  Peer obj = new Peer();
+			  Peer obj = new Peer();
+			  LocateRegistry.createRegistry()
       	    RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);
 
-      	    // Bind the remote object's stub in the registry
       	    Registry registry = LocateRegistry.getRegistry();
       	    registry.bind(Integer.toString(peer_id), stub);
 
@@ -59,7 +59,25 @@ public class Peer implements RMI {
     	}
     }
 
-    public String sayHello() {
-    	return "Hello, world!";
+    public void operation(String operation, String file_path, int operator) { //operator is space for reclaim, rep_degree for back up
+
+		if(operation == "BACKUP")
+		{
+			
+		}
+		else if(operation == "RESTORE")
+		{
+			
+		}
+		else if(operation == "DELETE")
+		{
+			
+		}
+		else if(operation == "RECLAIM")
+		{
+			
+		}
+		
+
         }
 }

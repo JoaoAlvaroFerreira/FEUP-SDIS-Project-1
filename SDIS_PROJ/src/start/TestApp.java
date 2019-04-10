@@ -29,7 +29,9 @@ public class TestApp {
          
         	
         	Registry registry = LocateRegistry.getRegistry("localhost");
-      	    RMI stub = (RMI) registry.lookup(peer_ap);
+              RMI stub = (RMI) registry.lookup(peer_ap);
+              
+              
               System.out.println(args[0]);
         } catch (Exception e) {
         	System.err.println("TestApp exception: " + e.toString());
