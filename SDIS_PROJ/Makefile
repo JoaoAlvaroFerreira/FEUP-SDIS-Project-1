@@ -13,11 +13,21 @@ BIN = -d bin/
 	$(JC) $(BIN) $(JFLAGS) $(CLASSPATH) $*.java
  
 CLIENTCLASSES = \
-    src/start/TestApp.java \
+    src/TestApp.java \
 
 SERVERCLASSES = \
-	src/p2p/Peer.java \
-    src/utils/RMI.java \
+	src/Peer.java \
+    src/Backup.java \
+	src/Body.java \
+	src/Chunk.java \
+	src/Delete.java \
+	src/Header.java \
+	src/MC.java \
+	src/MCBackup.java \
+	src/MCRestore.java \
+	src/PutChunk.java \
+	src/Reclaim.java \
+	src/Stored.java \
  
 default: classes
  

@@ -24,7 +24,6 @@ public class TestApp {
         System.out.println(args[0]);
         if(sub_protocol == "BACKUP")
         {
-            
             replication_degree = Integer.parseInt(args[3]);
             file_path = args[2];
         }
@@ -48,13 +47,15 @@ public class TestApp {
               RMI stub = (RMI) registry.lookup(peer_ap); */
 
                        // Getting the registry 
+                       
          Registry registry = LocateRegistry.getRegistry(null); 
     
          // Looking up the registry for the remote object 
          RMI stub = (RMI) registry.lookup("Hello"); 
     
          // Calling the remote method using the obtained object 
-         stub.operation(sub_protocol, file_path, replication_degree, disk_space);
+         stub.printMsg();
+         //stub.operation(sub_protocol, file_path, replication_degree, disk_space);
          
               
               System.out.println(args[0]);

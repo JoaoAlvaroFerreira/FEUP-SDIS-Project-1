@@ -47,9 +47,10 @@ public class Peer implements RMI {
       	   RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);  
          
          // Binding the remote object (stub) in the registry 
-         Registry registry = LocateRegistry.getRegistry(); 
+		 Registry registry = LocateRegistry.getRegistry(); 
+		 registry.bind("Hello", stub); 
          
-		 registry.bind(args[2], stub);  
+		 //registry.bind(args[2], stub);  
          System.err.println("Server ready"); 
 
 
