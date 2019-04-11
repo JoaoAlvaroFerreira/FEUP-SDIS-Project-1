@@ -9,10 +9,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import protocols.Backup;
-import protocols.Delete;
-import protocols.Reclaim;
-import protocols.Restore;
+
 
 
 public class Peer implements RMI {
@@ -30,6 +27,8 @@ public class Peer implements RMI {
 	private static int mdrPort;
 
 	private int peerID;
+	
+	StorageSystem storage;
 
 
 	public static void main(String[] args) throws UnknownHostException, InterruptedException { 
@@ -43,6 +42,8 @@ public class Peer implements RMI {
 		mdbPort = Integer.parseInt(args[6]);
 		mdrAddr = args[7];
 		mdrPort = Integer.parseInt(args[8]); 
+		
+		StorageSystem storage = new StorageSystem();
 
 		System.out.println("teste");
 		try {
