@@ -12,12 +12,16 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class FileInfo implements Serializable {
 
 	private int CHUNK_SIZE = 64000; //64kb
 	  private String fileID;
+	  private static final AtomicInteger count = new AtomicInteger(0); 
+	 // private final int fileN;
+	  
 	  private int chunkCount;
 	    private File file;
 	    private long filesize;
@@ -29,10 +33,18 @@ public class FileInfo implements Serializable {
 	        this.file = new File(path);
 	        this.filesize = file.length(); //size in bytes
 	        this.repDeg = replicationDegree;
-	        generateFileID();
+	        //generateFileID();
+	        //fileN = count.incrementAndGet(); 
+	        //fileID = String.valueOf(fileN);
 	        this.chunkCount = 0; 
 	        splitIntoChunks();
 	       
+	    }
+	    
+
+	    
+	    public String getFileID(){
+	    	return this.fileID;
 	    }
 	    
 	    public void splitIntoChunks() throws IOException
@@ -57,8 +69,7 @@ public class FileInfo implements Serializable {
 	       {
 	        String PART_NAME ="data"+this.chunkCount+".bin";
 	        int bytesRemaining = FILE_SIZE-totalBytesRead;
-	        if ( bytesRemaining < this.CHUNK_SIZE ) // Remaining Data Part is Smaller Than CHUNK_SIZE
-	                   // CHUNK_SIZE is assigned to remain volume
+	        if ( bytesRemaining < this.CHUNK_SIZE ) 
 	        {
 	         this.CHUNK_SIZE = bytesRemaining;
 	         System.out.println("CHUNK_SIZE: "+this.CHUNK_SIZE);
@@ -119,36 +130,9 @@ public class FileInfo implements Serializable {
 	    }
 
 	    
-		void generateFileID() {
-	    	
-	    	String aux  = this.peerID + file.getName() + file.lastModified();
-			
-			
-	    	this.fileID = sha256hashing(aux);
-	    }
-	    
-	    public String getFileID(){
-	    	return this.fileID;
-	    }
+		
 	    
 	    
-	    public static String sha256hashing(String base) {
-	        try{
-	            MessageDigest md = MessageDigest.getInstance("SHA-256");
-	            byte[] hashed = md.digest(base.getBytes("UTF-8"));
-	            StringBuffer hexString = new StringBuffer();
-
-	            for (int i = 0; i < hashed.length; i++) {
-	                String hex = Integer.toHexString(0xff & hashed[i]);
-	                if(hex.length() == 1) hexString.append('0');
-	                hexString.append(hex);
-	            }
-
-	            return hexString.toString();
-	        } catch(Exception ex){
-	           throw new RuntimeException(ex);
-	        }
-	    }
 	   
 	    
 

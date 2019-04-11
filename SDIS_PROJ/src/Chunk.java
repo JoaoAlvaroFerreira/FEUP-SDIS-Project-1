@@ -11,7 +11,6 @@ public class Chunk implements Serializable{
 	private int size; 
 	
 
-    public byte[] data;
 
 
  
@@ -27,8 +26,8 @@ public class Chunk implements Serializable{
 		public void setGoalRepDeg(int goalrepdeg){
 			this.goalRepDeg = goalrepdeg;
 		}
-		public void setCurrRepDeg(int currrepdeg){
-			this.currRepDeg = currrepdeg;
+		public void incCurrRepDeg(int currrepdeg){
+			this.currRepDeg++;
 		}
 		
 		public int getGoalRepDeg() {
@@ -58,4 +57,6 @@ public class Chunk implements Serializable{
 		public int getsize() {
 			return this.size;
 		}
+		
+	
 	}

@@ -1,5 +1,11 @@
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -8,6 +14,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.MessageDigest;
+import java.util.ArrayList;
 
 
 
@@ -28,7 +36,7 @@ public class Peer implements RMI {
 
 	private int peerID;
 	
-	StorageSystem storage;
+	static StorageSystem storage;
 
 
 	public static void main(String[] args) throws UnknownHostException, InterruptedException { 
@@ -54,10 +62,10 @@ public class Peer implements RMI {
 
 			// Binding the remote object (stub) in the registry 
 			Registry registry = LocateRegistry.getRegistry(); 
-			registry.bind("Hello", stub); 
+			//registry.bind("Hello", stub); 
 
-			//registry.bind(args[2], stub);  
-			System.err.println("Server ready"); 
+			registry.bind(args[2], stub);  
+			System.err.println("Peer ready"); 
 
 
 
@@ -94,32 +102,80 @@ public class Peer implements RMI {
 	public void printMsg() {  
 		System.out.println("This is an example RMI program");  
 	}
-
-	/*@Override
-	public void backup(String file_path, int ReplicationDeg) {
-		new Thread(new protocols.Backup(file_path, ReplicationDeg));
+	
+	public int getPeerID() {
+		return peerID;
 	}
+	
+	public void saveChunks() throws IOException{
+		
+		for(int i = 0; i < storage.getChunks().size(); i++) {
+			
+			 String filename = "Peer"+this.getPeerID() + "/backup/fileId"+storage.getChunks().get(i).getFileID()+"/chk"+storage.getChunks().get(i).getChunkN();
 
-	@Override
-	public void restore(String file_path) {
-		new Thread(new protocols.Restore(file_path));
+	         File file = new File(filename);
+	         if (!file.exists()) {
+	             file.getParentFile().mkdirs();
+	             file.createNewFile();
+	         }
+	         
+	         FileOutputStream fileOut = new FileOutputStream(filename);
+	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	         out.writeObject(storage.getChunks().get(i).getContent());
+	         out.close();
+	         fileOut.close();
+		}
+		
 	}
+	
+	public void restoreFile(String filename) throws IOException {
+		
+		String newfilename = "Peer"+this.getPeerID() + "/restore/"+filename;
 
-	@Override
-	public void delete(String file_path) {
-		new Thread(new protocols.Delete(file_path));
+        File file = new File(newfilename);
+        
+        String hash = sha256hashing(this.peerID + filename);
+
+       
+    	OutputStream outStream = new FileOutputStream(file);
+       
+    	for(int i = 0; i < this.storage.getChunks().size(); i++) {
+    		
+    		if(hash == this.storage.getChunks().get(i).getFileID()) {
+    		
+    		byte[] content = this.storage.getChunks().get(i).getContent();
+    		 outStream.write(content);
+    		}
+    	}
+          
+    	outStream.close();
+
 	}
-
-	@Override
-	public void reclaim(double space) {
-		new Thread(new protocols.Reclaim(space));
-	}*/
-
 	
 
-	
+	 public static String sha256hashing(String base) {
+	        try{
+	            MessageDigest md = MessageDigest.getInstance("SHA-256");
+	            byte[] hashed = md.digest(base.getBytes("UTF-8"));
+	            StringBuffer hexString = new StringBuffer();
 
-	
+	            for (int i = 0; i < hashed.length; i++) {
+	                String hex = Integer.toHexString(0xff & hashed[i]);
+	                if(hex.length() == 1) hexString.append('0');
+	                hexString.append(hex);
+	            }
 
+	            return hexString.toString();
+	        } catch(Exception ex){
+	           throw new RuntimeException(ex);
+	        }
+	    }
+	 String generateFileID(File file) {
+	    	
+	    	String aux  = this.peerID + file.getName(); //file.getDateModified()
+			
+			
+	    	return sha256hashing(aux);
+	    }
 	 
 }
