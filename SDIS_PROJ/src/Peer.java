@@ -33,10 +33,24 @@ public class Peer implements RMI {
 	private static int mdbPort;
 	private static String mdrAddr;
 	private static int mdrPort;
+	
+	private MC mc;
+	private MCBackup mdb;
+	private MCRestore mdr;
 
 	private int peerID;
 	
 	static StorageSystem storage;
+	
+	private Peer(String mcAddr, int mcPort, String mdbAddr, int mdbPort, String mdrAddr, int mdrPort) {
+		mc = new MC(mcAddr, mcPort);
+		mdb = new MCBackup(mdbAddr, mdbPort);
+		mdr = new MCRestore(mdrAddr,mdrPort);
+		
+		new Thread(mc).start();
+		new Thread(mdb).start();
+		new Thread(mdr).start();
+	}
 
 
 	public static void main(String[] args) throws UnknownHostException, InterruptedException { 
@@ -56,7 +70,7 @@ public class Peer implements RMI {
 		System.out.println("teste");
 		try {
 
-			Peer obj = new Peer();
+			Peer obj = new Peer(mcAddr, mcPort, mcAddr, mcPort, mcAddr, mcPort);
 
 			RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);  
 

@@ -1,10 +1,18 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+
+public class MCBackup implements Runnable {
+
+	private String INET_ADDR;
+
+	public MCBackup(String INETAddress, int port) {	
 
 
-public class MCBackup  {
-	MC mc;
-	
-	public MCBackup(int perr, String mcast_addr, Integer mcast_port) {
-		
 	}
-	
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
+	}
 }
