@@ -13,7 +13,7 @@ public class StorageSystem implements Serializable{
 	private long used_storage;
 
 	private ArrayList<Chunk> chunks;
-	private ArrayList<FileInfo> files; //restored
+	private ArrayList<FileInfo> fileinfo;
 	
 	public StorageSystem() {
 		used_storage = 0;
@@ -95,5 +95,40 @@ public class StorageSystem implements Serializable{
 	     }
 	     
 	    }
+	   
+	   public boolean moreRecent(FileInfo a, FileInfo b) {
+	        if (a.getDateModified().compareTo(b.getDateModified())>0)
+	            return true; // highest value first
+	        if (a.getDateModified().compareTo(b.getDateModified())==0)
+	            return false;
+	        return false;
+	    }
+	   
+	   public String lookUp(String filename) {
+			ArrayList<FileInfo> samename = null;
+			String aux = null;
+			FileInfo auxFile = null;
+			for(int i = 0; i < fileinfo.size(); i++) {
+			if(fileinfo.get(i).getFilename() == filename)
+				samename.add(fileinfo.get(i));
+			}
+			
+			if(samename.isEmpty())
+				aux = null;
+			else if(samename.size() == 1)
+			aux = samename.get(0).getFileID();
+			else {
+				for(int j = 0; j < samename.size(); j++) {
+					if(moreRecent(samename.get(j), auxFile)){
+						auxFile = samename.get(j);
+						aux = samename.get(j).getFileID();
+					}
+					
+			}
+			
+			
+		}
+			return aux;
+	   }
 }
 

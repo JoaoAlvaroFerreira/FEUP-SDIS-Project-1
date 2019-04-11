@@ -111,7 +111,7 @@ public class Peer implements RMI {
 		
 		for(int i = 0; i < storage.getChunks().size(); i++) {
 			
-			 String filename = "Peer"+this.getPeerID() + "/backup/fileId"+storage.getChunks().get(i).getFileID()+"/chk"+storage.getChunks().get(i).getChunkN();
+			 String filename = "Peer"+this.getPeerID() + "/backup/"+storage.getChunks().get(i).getFileID()+"/chk"+storage.getChunks().get(i).getChunkN();
 
 	         File file = new File(filename);
 	         if (!file.exists()) {
@@ -130,11 +130,13 @@ public class Peer implements RMI {
 	
 	public void restoreFile(String filename) throws IOException {
 		
+		  String hash = this.storage.lookUp(filename);
+		
 		String newfilename = "Peer"+this.getPeerID() + "/restore/"+filename;
 
         File file = new File(newfilename);
         
-        String hash = sha256hashing(this.peerID + filename);
+      
 
        
     	OutputStream outStream = new FileOutputStream(file);
@@ -172,7 +174,7 @@ public class Peer implements RMI {
 	    }
 	 String generateFileID(File file) {
 	    	
-	    	String aux  = this.peerID + file.getName(); //file.getDateModified()
+	    	String aux  = this.peerID + file.getName() + file.lastModified();
 			
 			
 	    	return sha256hashing(aux);
