@@ -167,29 +167,35 @@ public class StorageSystem implements Serializable{
 	    }
 	   
 	   public String lookUp(String filename) {
+		   System.out.println("LU Filename:"+filename);
 			ArrayList<FileInfo> samename = new ArrayList<FileInfo>();
 			String aux = null;
 			FileInfo auxFile = null;
+			
 			for(int i = 0; i < fileinfo.size(); i++) {
+				
+				System.out.println(fileinfo.get(i).getFilename());
+				
 			if(fileinfo.get(i).getFilename() == filename)
 				samename.add(fileinfo.get(i));
 			}
-			
-			if(samename.isEmpty())
-				aux = null;
-			else if(samename.size() == 1)
+
+			if(samename.size() == 1) {
 			aux = samename.get(0).getFileID();
+			 System.out.println("aux: "+aux);
+			}
+			
 			else {
 				for(int j = 0; j < samename.size(); j++) {
 					if(moreRecent(samename.get(j), auxFile)){
 						auxFile = samename.get(j);
 						aux = samename.get(j).getFileID();
 					}
-					
 			}
 			
 			
 		}
+			
 			return aux;
 	   }
 	   

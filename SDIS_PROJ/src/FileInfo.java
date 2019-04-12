@@ -20,6 +20,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class FileInfo implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String fileID;
 	private long dateModified;
 	private String filename;
@@ -29,6 +33,7 @@ public class FileInfo implements Serializable {
 		this.setFileID(id);
 		this.setDateModified(date);
 		this.setFilename(name);
+		this.peerID = peerID;
 	}
 
 	public String getFileID() {
@@ -53,6 +58,10 @@ public class FileInfo implements Serializable {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+	
+	public int getPeerID() {
+		return this.peerID;
 	}
 	
 

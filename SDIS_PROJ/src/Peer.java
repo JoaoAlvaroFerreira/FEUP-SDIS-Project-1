@@ -136,7 +136,7 @@ public class Peer implements RMI {
 		{
 			
 			backup(file_path, rep_degree);
-			System.out.println("in operation back up");
+			//System.out.println("in operation back up");
 			
 			
 		
