@@ -31,7 +31,7 @@ public class Peer implements RMI {
 	//final static int PORT = 8888;
 	private static double version;
 	private static int server_id;
-	private static int peer_id;
+	private static int peerID;
 	private static String mcIp = "224.0.0.3";
 	private static int mcPort = 8888;
 	private static String mdbIp;
@@ -43,7 +43,7 @@ public class Peer implements RMI {
 	private static MCBackup mdb;
 	private static MCRestore mdr;
 
-	private int peerID;
+
 	
 	private static StorageSystem storage;
 	
@@ -63,7 +63,7 @@ public class Peer implements RMI {
 
 		version = Double.parseDouble(args[0]);
 		server_id = Integer.parseInt(args[1]);
-		peer_id = Integer.parseInt(args[2]);
+		peerID = Integer.parseInt(args[2]);
 		mcIp = args[3];
 		mcPort = Integer.parseInt(args[4]);
 		mdbIp = args[5];
@@ -71,7 +71,8 @@ public class Peer implements RMI {
 		mdrIp = args[7];
 		mdrPort = Integer.parseInt(args[8]); 
 		
-		storage = new StorageSystem(peer_id);
+		storage = new StorageSystem(peerID);
+		
 
 		System.out.println("teste");
 		try {
@@ -82,7 +83,7 @@ public class Peer implements RMI {
 
 			// Binding the remote object (stub) in the registry 
 			Registry registry = LocateRegistry.getRegistry(); 
-			registry.bind(args[2], stub); 
+			registry.rebind(args[2], stub); 
 
 			
 			System.err.println("Peer ready"); 
@@ -95,6 +96,38 @@ public class Peer implements RMI {
 			e.printStackTrace();
 		}
 	}
+	
+	public void backup(String file_path, int rep_degree){
+		File file = new File(file_path);
+		String fileID = generateFileID(file);
+		System.out.println("Done hashing");
+		try {
+			System.out.println("In try");
+			System.out.println("File Path: "+file_path);
+			storage.addFile(file_path, file.lastModified(), fileID);
+			storage.serializeFileInfo();
+			storage.splitIntoChunks(file, fileID, 64000);
+			System.out.println("Done SPLITTING");
+			saveChunks();
+			System.out.println("Saved chunks");
+		} catch (IOException e) {
+			System.err.println("IO Exception: " + e.toString());
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void restore(String file_path) {
+		String hash = storage.lookUp(file_path);
+		System.out.println("Hash: "+hash);
+		try {
+			getChunksFromFile(hash);
+			restoreFile(file_path, hash);
+		} catch (IOException e) {
+			System.err.println("IO Exception: " + e.toString());
+			e.printStackTrace();
+		}
+	}
 
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
 
@@ -102,37 +135,16 @@ public class Peer implements RMI {
 		if(operation.equals("BACKUP"))
 		{
 			
+			backup(file_path, rep_degree);
 			System.out.println("in operation back up");
 			
-			File file = new File(file_path);
-			String fileID = generateFileID(file);
-			System.out.println("Done hashing");
-			try {
-				System.out.println("In try");
-				System.out.println("File Path: "+file_path);
-				storage.addFile(file_path, file.lastModified(), fileID);
-				storage.splitIntoChunks(file, fileID, 64000);
-				System.out.println("Done SPLITTING");
-				saveChunks();
-				System.out.println("Saved chunks");
-			} catch (IOException e) {
-				System.err.println("IO Exception: " + e.toString());
-				e.printStackTrace();
-			}
 			
 		
 			//new Thread(new Backup(file_path,rep_degree));
 		}
 		else if(operation.equals("RESTORE"))
 		{
-			String hash = storage.lookUp(file_path);
-			try {
-				getChunksFromFile(hash);
-				restoreFile(file_path, hash);
-			} catch (IOException e) {
-				System.err.println("IO Exception: " + e.toString());
-				e.printStackTrace();
-			}
+			restore(file_path);
 			
 		}
 		else if(operation.equals("DELETE"))
@@ -190,6 +202,7 @@ public class Peer implements RMI {
 		
 		for(int i = 0; i < storage.getChunks().size(); i++) {
 			
+			System.out.println("PeerID: "+this.getPeerID());
 			 String filename = "Peer"+this.getPeerID() + "/backup/"+storage.getChunks().get(i).getFileID()+"/chk"+storage.getChunks().get(i).getChunkN();
 
 	         File file = new File(filename);
@@ -215,16 +228,21 @@ public class Peer implements RMI {
 
         File file = new File(newfilename);
         
-      
+        
+       
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
 
        
     	OutputStream outStream = new FileOutputStream(file);
        
-    	for(int i = 0; i < this.storage.getChunks().size(); i++) {
+    	for(int i = 0; i < storage.getChunks().size(); i++) {
     		
-    		if(hash == this.storage.getChunks().get(i).getFileID()) {
+    		if(hash == storage.getChunks().get(i).getFileID()) {
     		
-    		byte[] content = this.storage.getChunks().get(i).getContent();
+    		byte[] content = storage.getChunks().get(i).getContent();
     		 outStream.write(content);
     		}
     	}
@@ -261,8 +279,9 @@ public class Peer implements RMI {
 	    }
 	 
 public void getChunksFromFile(String hash) throws IOException { //manda-se o ID do file (hashed)
-		   
-		 
+		   System.out.println("getChunks");
+		   System.out.println("Hash: "+hash);
+		   if(Files.exists(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))) {
 		 Files.walk(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))
 	     .forEach(p -> {
 	        try {
@@ -278,4 +297,8 @@ public void getChunksFromFile(String hash) throws IOException { //manda-se o ID 
 		 chunkIterator = 0;
 	
 	 }
+		   else {
+			   System.out.println("Chunks you're looking for don't exist");
+		   }
+	}
 }

@@ -2,9 +2,15 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class StorageSystem implements Serializable{
@@ -34,6 +40,13 @@ public class StorageSystem implements Serializable{
 		used_storage = 0;
 		chunks = new ArrayList<Chunk>();
 		fileinfo = new ArrayList<FileInfo>();
+		
+		try {
+			loadFileInfo();
+		} catch (IOException e) {
+			System.out.println("Load File Info Failed:" + e.toString());
+			e.printStackTrace();
+		}
 	
 	}
 	
@@ -65,7 +78,7 @@ public class StorageSystem implements Serializable{
 	}
 	
 	public void addFile(String filename, long data, String hash) {
-		fileinfo.add(new FileInfo(filename, data, hash, this.peerID));
+		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
 	public boolean storeChunk(Chunk c) {
@@ -180,6 +193,61 @@ public class StorageSystem implements Serializable{
 			return aux;
 	   }
 	   
+	   
+		//"/fileInfo/Peer"+peerID+"/"+fileID
+		public void serializeFileInfo() {
+			
+			for(int i = 0; i < this.fileinfo.size(); i++ ) {
+				
+			try{
+				
+				File file = new File("fileInfo/Peer"+peerID+"/"+this.fileinfo.get(i).getFileID()+".ser");
+				
+			    if (!file.exists()) {
+		             file.getParentFile().mkdirs();
+		             file.createNewFile();
+		         }
+			    ObjectOutputStream objoutput = new ObjectOutputStream(new FileOutputStream(file.getPath()));
+				objoutput.writeObject(this.fileinfo.get(i));
+				
+				objoutput.close();
+			}  catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			}
+			
+			
+		}
+		
+		
+		public void loadFileInfo() throws IOException {
+			 System.out.println("loadFileInfo");
+			
+			if(Files.exists(Paths.get("/fileInfo/Peer"+peerID+"/"))) {
+			 Files.walk(Paths.get("/fileInfo/Peer"+peerID+"/"))
+		     .forEach(p -> {
+		        try {
+		        	try(ObjectInputStream objinput = new ObjectInputStream(new FileInputStream(p.toString()))){
+						Object obj = objinput.readObject();
+						
+						if(obj instanceof FileInfo) {
+							FileInfo fileinforetrieved = (FileInfo) obj;
+							this.fileinfo.add(fileinforetrieved);
+						}
+					}  catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+		    });
+			}
+			 
+			 
+			
+		}
 	  
 }
 

@@ -55,14 +55,7 @@ public class FileInfo implements Serializable {
 		this.filename = filename;
 	}
 	
-	//"/fileInfo/Peer"+peerID+"/"+fileID
-	public void serializeFileInfo() {
-		
-	}
-	
-	public void deserializeFileInfo() {
-		
-	}
+
 	
 	
 }
