@@ -10,7 +10,7 @@ public class Backup extends Thread implements Runnable {
 	Path path;
 	
 	public Backup(String path, int rep_degree){
-	//	this.path = Path.of(path);
+	
 		this.filename = this.path.getFileName().toString();
 		this.rep_degree = rep_degree;
 		

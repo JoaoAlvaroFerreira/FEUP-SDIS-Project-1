@@ -10,12 +10,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 
 
@@ -42,6 +46,7 @@ public class Peer implements RMI {
 	
 	static StorageSystem storage;
 	
+	private int chunkIterator = 0;
 	private Peer(String mcAddr, int mcPort, String mdbAddr, int mdbPort, String mdrAddr, int mdrPort) {
 		mc = new MC(mcAddr, mcPort);
 		mdb = new MCBackup(mdbAddr, mdbPort);
@@ -76,31 +81,45 @@ public class Peer implements RMI {
 
 			// Binding the remote object (stub) in the registry 
 			Registry registry = LocateRegistry.getRegistry(); 
-			//registry.bind("Hello", stub); 
+			registry.bind(args[2], stub); 
 
-			registry.bind(args[2], stub);  
+			
 			System.err.println("Peer ready"); 
 
 
 
 
 		} catch (Exception e) {
-			System.err.println("Server exception: " + e.toString());
+			System.err.println("Peer exception: " + e.toString());
 			e.printStackTrace();
 		}
 	}
 
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
 
-		if(operation == "BACKUP")
+		System.out.println("in operation");
+		if(operation.equals("BACKUP"))
 		{
-			new Thread(new Backup(file_path,rep_degree));
+			
+			System.out.println("in operation back up");
+			File file = new File(file_path);
+			String fileID = sha256hashing(file.getName());
+			try {
+				storage.splitIntoChunks(file, fileID, 64000);
+				saveChunks();
+			} catch (IOException e) {
+				System.err.println("IO Exception: " + e.toString());
+				e.printStackTrace();
+			}
+			
+		
+			//new Thread(new Backup(file_path,rep_degree));
 		}
-		else if(operation == "RESTORE")
+		else if(operation.equals("RESTORE"))
 		{
 			new Thread(new Restore(file_path));
 		}
-		else if(operation == "DELETE")
+		else if(operation.equals("DELETE"))
 		{
 			new Thread(new Delete(file_path));
 		}
@@ -194,4 +213,22 @@ public class Peer implements RMI {
 	    	return sha256hashing(aux);
 	    }
 	 
+public void getChunksFromFile(String hash) throws IOException { //manda-se o ID do file (hashed)
+		   
+		 
+		 Files.walk(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))
+	     .forEach(p -> {
+	        try {
+	        	chunkIterator++;
+	           
+	            byte[] chunkContent = Files.readAllBytes(p);
+
+	            storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    });
+		 chunkIterator = 0;
+	
+	 }
 }

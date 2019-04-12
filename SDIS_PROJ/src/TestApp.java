@@ -15,15 +15,15 @@ public class TestApp {
 	private static String peer_ap;
 	private static String sub_protocol;
 	private static String file_path;
-	private static double disk_space;
-	private static int ReplicationDeg;
+	private static double disk_space = 0;
+	private static int ReplicationDeg = 0;
 	
     public static void main(String[] args) throws UnknownHostException { //<peer_ap> <sub_protocol> <opnd_1> <opnd_2> 
     	
     	peer_ap = args[0];
-        sub_protocol = args[1].toUpperCase();
+        sub_protocol = args[1];
         
-        System.out.println(args[0]);
+     
         
         
         try {       	
@@ -35,11 +35,13 @@ public class TestApp {
             RMI stub = (RMI) registry.lookup(peer_ap); 
        
             // Calling the remote method using the obtained object 
-           // stub.printMsg();
-            stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
-            
-            if(sub_protocol == "BACKUP")
+            //stub.printMsg();
+            //stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
+        	System.out.println("PROTOCOLO "+sub_protocol);
+        	
+            if(sub_protocol.equals("BACKUP"))
             {
+            	System.out.println("in testapp back up");
             	if(args.length != 4) {
             		System.out.println("Invalid arguments for backup Protocol");
             		System.out.println("TestApp backup <file_path> <replication_degree>");
@@ -89,7 +91,6 @@ public class TestApp {
             
             
                  
-                 System.out.println(args[0]);
            } catch (Exception e) {
            	System.err.println("TestApp exception: " + e.toString());
           	    e.printStackTrace();
@@ -99,7 +100,6 @@ public class TestApp {
         
   
                
-        System.out.println(args[0]);
      
 
        
