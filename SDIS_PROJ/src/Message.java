@@ -7,32 +7,45 @@ import java.net.DatagramPacket;
 import java.util.Arrays;
 
 public class Message implements Runnable {
-
-DatagramPacket packet;
+	private byte[] msg;
+	private String channelType;
 	
-	String[] header;
-	
-	public Message(DatagramPacket packet){
-		this.packet=packet;
+	public Message(byte[] msg, String channelType){
+		this.msg=msg;
+		this.channelType=channelType;
 	}
 
 	@Override
 	public void run() {
-		String operation = header[0];
+		String channel = channelType;
 		
-		if(operation.equals("putchunk"))
+		if(channel.equals("mc"))
 		{
-			//PutChunk;
+			try {
+				Peer.getMc().sendMessage(msg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
-		else if(operation.equals("RESTORE"))
+		else if(channel.equals("mdb"))
 		{
+			try {
+				Peer.getMdb().sendMessage(msg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		else if(operation.equals("DELETE"))
+		else if(channel.equals("mdr"))
 		{
-		}
-		else if(operation == "RECLAIM")
-		{
+			try {
+				Peer.getMdr().sendMessage(msg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	

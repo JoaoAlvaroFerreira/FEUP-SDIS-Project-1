@@ -15,9 +15,9 @@ import java.util.ArrayList;
 
 public class StorageSystem implements Serializable{
 
-	private long storage_capacity = 10000000; // 8MBytes
-	private long used_storage;
-	private long space_available = storage_capacity - used_storage;
+	private static long storage_capacity = 10000000; // 8MBytes
+	private static long used_storage;
+	private static long space_available = storage_capacity - used_storage;
 	private int peerID;
 
 	public long getStorage_capacity() {
@@ -32,7 +32,7 @@ public class StorageSystem implements Serializable{
 		return space_available;
 	}
 
-	private ArrayList<Chunk> chunks;
+	static ArrayList<Chunk> chunks;
 	private ArrayList<FileInfo> fileinfo;
 	
 	public StorageSystem(int peerID) {
@@ -60,11 +60,11 @@ public class StorageSystem implements Serializable{
 	
 	
 	
-	public ArrayList<Chunk> getChunks() {
+	public static ArrayList<Chunk> getChunks() {
 		return chunks;
 	}
 	
-	public boolean isStored(Chunk c) {
+	public static boolean isStored(Chunk c) {
 		
 		boolean isEqualChunk = false;
 		
@@ -82,7 +82,7 @@ public class StorageSystem implements Serializable{
 		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
-	public boolean storeChunk(Chunk c) {
+	public static boolean storeChunk(Chunk c) {
 		byte[] content = c.getContent();
 		boolean chunkStored = false;
 		
@@ -137,10 +137,10 @@ public class StorageSystem implements Serializable{
 	         chunkCount++;
 	        }
 	        
-	        chunks.add(new Chunk(fileID,chunkCount, temporary));
+	        chunks.add(new Chunk(fileID,chunkCount, temporary, bytesRead));
 	        
 	        if(bytesRemaining == 0 && lastChunk)
-		        chunks.add(new Chunk(fileID,chunkCount, new byte[chunk_size]));
+		        chunks.add(new Chunk(fileID,chunkCount, new byte[chunk_size], bytesRead));
 	        
 	        System.out.println("Total Bytes Read: "+ totalBytesRead);
 	       }
@@ -255,6 +255,25 @@ public class StorageSystem implements Serializable{
 			}
 			 
 			 
+			
+		}
+
+		public static void deleteChunks(String file_id) {
+			for(int i=0; i< chunks.size();i++) {
+				if(chunks.get(i).getChunkId().equals(Chunk.getChunkId())) {
+					chunks.remove(i);
+					break;
+				}
+			}
+			
+			File file = new File(Peer.CHUNKS +  Chunk.getChunkId());
+			
+			file.delete();
+			
+			used_storage-= Chunk.getContent().length;
+			
+			
+			System.out.println("Chunk Deleted\n" + Chunk.getChunkId());
 			
 		}
 	  

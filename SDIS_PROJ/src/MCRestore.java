@@ -3,6 +3,10 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Hashtable;
 
 public class MCRestore extends Thread {
 
@@ -10,6 +14,8 @@ public class MCRestore extends Thread {
 	private String ip;
 	private int port;
 	MulticastSocket socket;
+	
+	private Hashtable<String,HashSet<Integer>> logs;
 
 	public MCRestore(String ip, int port) throws IOException {	
 		this.ip=ip;
@@ -46,16 +52,47 @@ public class MCRestore extends Thread {
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				new Thread(new Message(packet)).start();
+				new Thread(new MessagesManager(packet));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		// close socket
-		//socket.close();
+		//socket.close();												ERRO NO SOCKET CLOSE AINDA POR RESOLVER
 
 	}
+	
+	public void startSave(String chunkID) {
+		logs.put(chunkID, new HashSet<Integer>());
+		
+	}
+
+	public int getSaves(String chunkID) {
+		if(logs.get(chunkID) == null) return 0;
+		return logs.get(chunkID).size();
+	}
+
+	public void stopSave(String chunkID) {
+		logs.remove(chunkID);
+		
+	}
+
+	public boolean isSaving(String file_id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public void save(String file_id, Chunk chunk) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public ArrayList<Chunk> getSave(String file_id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 
 
 }

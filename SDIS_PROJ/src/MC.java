@@ -6,6 +6,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Hashtable;
 
 
 
@@ -16,6 +18,8 @@ public class MC extends Thread{
 	private String ip;
 	private int port;
 	MulticastSocket socket;
+	
+	private Hashtable<String,HashSet<Integer>> logs;
 
 	public MC(String ip, int port) throws IOException {
 		this.ip=ip;
@@ -51,15 +55,36 @@ public class MC extends Thread{
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				new Thread(new Message(packet)).start();
+				new Thread(new MessagesManager(packet));
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		// close socket
-		//socket.close();
+		//socket.close();												ERRO NO SOCKET CLOSE AINDA POR RESOLVER
 
+	}
+
+	public void startSave(String chunkID) {
+		logs.put(chunkID, new HashSet<Integer>());
+		
+	}
+
+	public int getSaves(String chunkID) {
+		if(logs.get(chunkID) == null) return 0;
+		return logs.get(chunkID).size();
+	}
+
+	public void stopSave(String chunkID) {
+		logs.remove(chunkID);
+		
+	}
+
+	public void save(String chunk_id, int peer_id) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

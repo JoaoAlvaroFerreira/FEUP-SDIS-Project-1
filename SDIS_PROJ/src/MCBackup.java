@@ -46,7 +46,6 @@ public class MCBackup extends Thread {
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				new Thread(new Message(packet)).start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -58,6 +57,21 @@ public class MCBackup extends Thread {
 	}
 
 	public void save(String chunkId, int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void startSave(String chunkId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getSaves(String chunkId) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void stopSave(String chunkId) {
 		// TODO Auto-generated method stub
 		
 	}

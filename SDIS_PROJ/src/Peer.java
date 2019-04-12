@@ -2,6 +2,7 @@
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,11 @@ public class Peer implements RMI {
 	private static MC mc;
 	private static MCBackup mdb;
 	private static MCRestore mdr;
+	
+	
+	public static String CHUNKS  = "CHUNKS_";
+	public static String RESTORES  = "RESTORES_";
+	public static String DISK = "disk_";
 
 
 	
@@ -58,6 +64,36 @@ public class Peer implements RMI {
 		new Thread(mc).start();
 		new Thread(mdb).start();
 		new Thread(mdr).start();
+	}
+	
+	
+	public static MC getMc() {
+		return mc;
+	}
+
+
+	public static void setMc(MC mc) {
+		Peer.mc = mc;
+	}
+
+
+	public static MCBackup getMdb() {
+		return mdb;
+	}
+
+
+	public static void setMdb(MCBackup mdb) {
+		Peer.mdb = mdb;
+	}
+
+
+	public static MCRestore getMdr() {
+		return mdr;
+	}
+
+
+	public static void setMdr(MCRestore mdr) {
+		Peer.mdr = mdr;
 	}
 
 
@@ -118,6 +154,8 @@ public class Peer implements RMI {
 			e.printStackTrace();
 		}
 		
+		Chunk.backup();
+		
 	}
 	
 	public void restore(String file_path) {
@@ -131,6 +169,8 @@ public class Peer implements RMI {
 			System.err.println("IO Exception: " + e.toString());
 			e.printStackTrace();
 		}
+		
+		Chunk.restore();
 	}
 
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
@@ -162,43 +202,16 @@ public class Peer implements RMI {
 
 
 	}
+
+
 	
-
-	public static MC getMc() {
-		return mc;
-	}
-
-
-	public void setMc(MC mc) {
-		this.mc = mc;
-	}
-
-
-	public static MCBackup getMdb() {
-		return mdb;
-	}
-
-
-	public void setMdb(MCBackup mdb) {
-		this.mdb = mdb;
-	}
-
-
-	public static MCRestore getMdr() {
-		return mdr;
-	}
-
-
-	public void setMdr(MCRestore mdr) {
-		this.mdr = mdr;
-	}
 
 
 	public void printMsg() {  
 		System.out.println("This is an example RMI program");  
 	}
 	
-	public int getPeerID() {
+	public static int getPeerID() {
 		return peerID;
 	}
 	
@@ -294,7 +307,7 @@ public void getChunksFromFile(String hash) throws IOException { //manda-se o ID 
 	        {
 	        	chunkIterator++;
 	        	byte[] chunkContent = Files.readAllBytes(file.toPath());
-	        	storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+	        	//storage.addChunk(new Chunk(hash,chunkIterator,chunkContent)); 				ALTERAR POR CAUSA DO CONSTRUTOR
 	        }
 	        chunkIterator = 0;
 		
@@ -331,4 +344,16 @@ public void getChunksFromFile(String hash) throws IOException { //manda-se o ID 
 			   System.out.println("Chunks you're looking for don't exist");
 		   } */
 	}
+
+
+public static void saveStorage() throws IOException {
+	FileOutputStream stream = new FileOutputStream(Peer.DISK);
+
+	ObjectOutputStream out = new ObjectOutputStream(stream);
+
+	out.writeObject(storage);
+
+	out.close();
+	
+}
 }
