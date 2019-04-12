@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -19,10 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileInfo implements Serializable {
 
 	private String fileID;
-	private Date dateModified;
+	private long dateModified;
 	private String filename;
+	private int peerID;
 	
-	public FileInfo(String id, Date date, String name) {
+	public FileInfo(String id, long date, String name, int peerID) {
 		this.setFileID(id);
 		this.setDateModified(date);
 		this.setFilename(name);
@@ -36,11 +39,11 @@ public class FileInfo implements Serializable {
 		this.fileID = fileID;
 	}
 
-	public Date getDateModified() {
+	public long getDateModified() {
 		return dateModified;
 	}
 
-	public void setDateModified(Date dateModified) {
+	public void setDateModified(long dateModified) {
 		this.dateModified = dateModified;
 	}
 
@@ -50,6 +53,15 @@ public class FileInfo implements Serializable {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
+	}
+	
+	//"/fileInfo/Peer"+peerID+"/"+fileID
+	public void serializeFileInfo() {
+		
+	}
+	
+	public void deserializeFileInfo() {
+		
 	}
 	
 	

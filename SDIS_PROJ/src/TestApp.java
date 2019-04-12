@@ -23,6 +23,10 @@ public class TestApp {
     	peer_ap = args[0];
         sub_protocol = args[1];
         
+        for(String item : args) {
+        	
+        	System.out.println("Arg: "+item);
+        }
      
         
         
@@ -52,7 +56,7 @@ public class TestApp {
                 
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
             }
-            else if(sub_protocol == "RESTORE")
+            else if(sub_protocol.equals("RESTORE"))
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for restore Protocol");
@@ -62,9 +66,9 @@ public class TestApp {
             	
                 file_path = args[2];
                 
-                stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
+                stub.operation(sub_protocol, file_path, 0, 0);
             }
-            else if(sub_protocol == "DELETE")
+            else if(sub_protocol.equals("DELETE"))
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for delete Protocol");
@@ -76,7 +80,7 @@ public class TestApp {
                 
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
             }
-            else if(sub_protocol == "RECLAIM")
+            else if(sub_protocol.equals("RECLAIM"))
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for reclaim Protocol");
@@ -98,9 +102,6 @@ public class TestApp {
         
         
         
-  
-               
-     
 
        
 

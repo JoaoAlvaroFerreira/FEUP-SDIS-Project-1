@@ -12,6 +12,7 @@ public class StorageSystem implements Serializable{
 	private long storage_capacity = 10000000; // 8MBytes
 	private long used_storage;
 	private long space_available = storage_capacity - used_storage;
+	private int peerID;
 
 	public long getStorage_capacity() {
 		return storage_capacity;
@@ -28,9 +29,11 @@ public class StorageSystem implements Serializable{
 	private ArrayList<Chunk> chunks;
 	private ArrayList<FileInfo> fileinfo;
 	
-	public StorageSystem() {
+	public StorageSystem(int peerID) {
+		this.peerID = peerID;
 		used_storage = 0;
 		chunks = new ArrayList<Chunk>();
+		fileinfo = new ArrayList<FileInfo>();
 	
 	}
 	
@@ -41,6 +44,8 @@ public class StorageSystem implements Serializable{
 		chunks.add(c);
 		}
 	}
+	
+	
 	
 	public ArrayList<Chunk> getChunks() {
 		return chunks;
@@ -57,6 +62,10 @@ public class StorageSystem implements Serializable{
 		}
 		
 		return isEqualChunk;
+	}
+	
+	public void addFile(String filename, long data, String hash) {
+		fileinfo.add(new FileInfo(filename, data, hash, this.peerID));
 	}
 	
 	public boolean storeChunk(Chunk c) {
@@ -76,6 +85,7 @@ public class StorageSystem implements Serializable{
 	
 	   public void splitIntoChunks(File file, String fileID, int chunk_size) throws IOException
 	    {
+		   System.out.println("In Split");
 	     Boolean lastChunk = false;
 	     File willBeRead = file;
 	     int FILE_SIZE = (int) willBeRead.length();
@@ -95,7 +105,7 @@ public class StorageSystem implements Serializable{
 	       int chunkCount = 0;
 	       while ( totalBytesRead < FILE_SIZE )
 	       {
-	        String PART_NAME ="data"+chunkCount+".bin";
+	        String PART_NAME = "data"+chunkCount+".bin";
 	        int bytesRemaining = FILE_SIZE-totalBytesRead;
 	        if ( bytesRemaining < chunk_size ) 
 	        {
@@ -118,7 +128,7 @@ public class StorageSystem implements Serializable{
 	        if(bytesRemaining == 0 && lastChunk)
 		        chunks.add(new Chunk(fileID,chunkCount, new byte[chunk_size]));
 	        
-	        System.out.println("Total Bytes Read: "+totalBytesRead);
+	        System.out.println("Total Bytes Read: "+ totalBytesRead);
 	       }
 	       
 	      }
@@ -138,15 +148,13 @@ public class StorageSystem implements Serializable{
 	    }
 	   
 	   public boolean moreRecent(FileInfo a, FileInfo b) {
-	        if (a.getDateModified().compareTo(b.getDateModified())>0)
+	        if (a.getDateModified() > b.getDateModified())
 	            return true; // highest value first
-	        if (a.getDateModified().compareTo(b.getDateModified())==0)
-	            return false;
-	        return false;
+	        else  return false;
 	    }
 	   
 	   public String lookUp(String filename) {
-			ArrayList<FileInfo> samename = null;
+			ArrayList<FileInfo> samename = new ArrayList<FileInfo>();
 			String aux = null;
 			FileInfo auxFile = null;
 			for(int i = 0; i < fileinfo.size(); i++) {

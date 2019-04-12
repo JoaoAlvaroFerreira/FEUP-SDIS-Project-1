@@ -19,6 +19,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.stream.Stream;
 
 
@@ -44,7 +45,7 @@ public class Peer implements RMI {
 
 	private int peerID;
 	
-	static StorageSystem storage;
+	private static StorageSystem storage;
 	
 	private int chunkIterator = 0;
 	private Peer(String mcIp, int mcPort, String mdbIp, int mdbPort, String mdrIp, int mdrPort) throws IOException {
@@ -70,7 +71,7 @@ public class Peer implements RMI {
 		mdrIp = args[7];
 		mdrPort = Integer.parseInt(args[8]); 
 		
-		StorageSystem storage = new StorageSystem();
+		storage = new StorageSystem(peer_id);
 
 		System.out.println("teste");
 		try {
@@ -102,11 +103,18 @@ public class Peer implements RMI {
 		{
 			
 			System.out.println("in operation back up");
+			
 			File file = new File(file_path);
-			String fileID = sha256hashing(file.getName());
+			String fileID = generateFileID(file);
+			System.out.println("Done hashing");
 			try {
+				System.out.println("In try");
+				System.out.println("File Path: "+file_path);
+				storage.addFile(file_path, file.lastModified(), fileID);
 				storage.splitIntoChunks(file, fileID, 64000);
+				System.out.println("Done SPLITTING");
 				saveChunks();
+				System.out.println("Saved chunks");
 			} catch (IOException e) {
 				System.err.println("IO Exception: " + e.toString());
 				e.printStackTrace();
@@ -117,15 +125,23 @@ public class Peer implements RMI {
 		}
 		else if(operation.equals("RESTORE"))
 		{
-			new Thread(new Restore(file_path));
+			String hash = storage.lookUp(file_path);
+			try {
+				getChunksFromFile(hash);
+				restoreFile(file_path, hash);
+			} catch (IOException e) {
+				System.err.println("IO Exception: " + e.toString());
+				e.printStackTrace();
+			}
+			
 		}
 		else if(operation.equals("DELETE"))
 		{
-			new Thread(new Delete(file_path));
+			//new Thread(new Delete(file_path));
 		}
 		else if(operation == "RECLAIM")
 		{
-			new Thread(new Reclaim(space));
+			//new Thread(new Reclaim(space));
 		}
 
 
@@ -191,9 +207,9 @@ public class Peer implements RMI {
 		
 	}
 	
-	public void restoreFile(String filename) throws IOException {
+	public void restoreFile(String  filename, String hash) throws IOException {
 		
-		  String hash = this.storage.lookUp(filename);
+		
 		
 		String newfilename = "Peer"+this.getPeerID() + "/restore/"+filename;
 
@@ -235,6 +251,7 @@ public class Peer implements RMI {
 	           throw new RuntimeException(ex);
 	        }
 	    }
+	 
 	 String generateFileID(File file) {
 	    	
 	    	String aux  = this.peerID + file.getName() + file.lastModified();
