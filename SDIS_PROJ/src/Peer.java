@@ -1,8 +1,10 @@
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -100,6 +102,7 @@ public class Peer implements RMI {
 	public void backup(String file_path, int rep_degree){
 		File file = new File(file_path);
 		String fileID = generateFileID(file);
+		System.out.println("FileID Hash:" + fileID);
 		System.out.println("Done hashing");
 		try {
 			System.out.println("In try");
@@ -122,6 +125,7 @@ public class Peer implements RMI {
 		System.out.println("Hash: "+hash);
 		try {
 			getChunksFromFile(hash);
+			System.out.println("Got chunks already");
 			restoreFile(file_path, hash);
 		} catch (IOException e) {
 			System.err.println("IO Exception: " + e.toString());
@@ -222,6 +226,7 @@ public class Peer implements RMI {
 	
 	public void restoreFile(String  filename, String hash) throws IOException {
 		
+		System.out.println("restore file");
 		
 		
 		String newfilename = "Peer"+this.getPeerID() + "/restore/"+filename;
@@ -281,15 +286,40 @@ public class Peer implements RMI {
 public void getChunksFromFile(String hash) throws IOException { //manda-se o ID do file (hashed)
 		   System.out.println("getChunks");
 		   System.out.println("Hash: "+hash);
-		   if(Files.exists(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))) {
+		   
+		   File folder = new File("Peer"+this.getPeerID() + "/backup/"+hash+"/");
+		   File[] files = folder.listFiles();
+		   
+	        for (File file : files)
+	        {
+	        	chunkIterator++;
+	        	byte[] chunkContent = Files.readAllBytes(file.toPath());
+	        	storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+	        }
+	        chunkIterator = 0;
+		
+		   /*if(Files.exists(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))) {
 		 Files.walk(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))
 	     .forEach(p -> {
 	        try {
 	        	chunkIterator++;
 	           
-	            byte[] chunkContent = Files.readAllBytes(p);
+	        	InputStream in = new FileInputStream(p.toString());
+	        			
+	        	 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	        	    int nRead;
+	        	    byte[] data = new byte[1024];
+	        	    while ((nRead = in.read(data, 0, data.length)) != -1) {
+	        	        buffer.write(data, 0, nRead);
+	        	    }
+	        	 
+	        	    buffer.flush();
+	        	    byte[] chunkContent = buffer.toByteArray();
+	           
 
 	            storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+	            
+	            in.close();
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        }
@@ -299,6 +329,6 @@ public void getChunksFromFile(String hash) throws IOException { //manda-se o ID 
 	 }
 		   else {
 			   System.out.println("Chunks you're looking for don't exist");
-		   }
+		   } */
 	}
 }

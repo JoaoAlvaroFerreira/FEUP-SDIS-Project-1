@@ -78,6 +78,7 @@ public class StorageSystem implements Serializable{
 	}
 	
 	public void addFile(String filename, long data, String hash) {
+		System.out.println("ADD FILE HASH: "+hash);
 		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
@@ -174,13 +175,16 @@ public class StorageSystem implements Serializable{
 			
 			for(int i = 0; i < fileinfo.size(); i++) {
 				
-				System.out.println(fileinfo.get(i).getFilename());
 				
-			if(fileinfo.get(i).getFilename() == filename)
-				samename.add(fileinfo.get(i));
+				System.out.println("FILENAME: "+fileinfo.get(i).getFilename()+" FILEID: "+fileinfo.get(i).getFileID());
+				
+			if(fileinfo.get(i).getFilename().equals(filename))
+				aux = fileinfo.get(i).getFileID();
+				//samename.add(fileinfo.get(i));
+				
 			}
 
-			if(samename.size() == 1) {
+			/*if(samename.size() == 1) {
 			aux = samename.get(0).getFileID();
 			 System.out.println("aux: "+aux);
 			}
@@ -190,11 +194,10 @@ public class StorageSystem implements Serializable{
 					if(moreRecent(samename.get(j), auxFile)){
 						auxFile = samename.get(j);
 						aux = samename.get(j).getFileID();
-					}
-			}
+						}
+						}
+					}*/
 			
-			
-		}
 			
 			return aux;
 	   }

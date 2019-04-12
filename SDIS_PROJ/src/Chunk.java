@@ -19,7 +19,7 @@ public class Chunk implements Serializable{
 			this.chunkN = chunkn;
 			this.fileID = fileID;
 			this.content = content;
-			this.size = size;
+			this.size = content.length;
 			this.chunkID=fileID + "chunk" + chunkn;
 		}
 
