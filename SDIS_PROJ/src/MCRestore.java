@@ -46,14 +46,14 @@ public class MCRestore extends Thread {
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				new Thread(new MsgHandler(packet)).start();
+				new Thread(new Message(packet)).start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		// close socket
-		socket.close();
+		//socket.close();
 
 	}
 

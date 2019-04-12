@@ -38,9 +38,9 @@ public class Peer implements RMI {
 	private static String mdrIp;
 	private static int mdrPort;
 	
-	private MC mc;
-	private MCBackup mdb;
-	private MCRestore mdr;
+	private static MC mc;
+	private static MCBackup mdb;
+	private static MCRestore mdr;
 
 	private int peerID;
 	
@@ -131,6 +131,36 @@ public class Peer implements RMI {
 
 	}
 	
+
+	public static MC getMc() {
+		return mc;
+	}
+
+
+	public void setMc(MC mc) {
+		this.mc = mc;
+	}
+
+
+	public static MCBackup getMdb() {
+		return mdb;
+	}
+
+
+	public void setMdb(MCBackup mdb) {
+		this.mdb = mdb;
+	}
+
+
+	public static MCRestore getMdr() {
+		return mdr;
+	}
+
+
+	public void setMdr(MCRestore mdr) {
+		this.mdr = mdr;
+	}
+
 
 	public void printMsg() {  
 		System.out.println("This is an example RMI program");  

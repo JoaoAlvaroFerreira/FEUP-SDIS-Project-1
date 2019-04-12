@@ -46,15 +46,20 @@ public class MCBackup extends Thread {
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				socket.receive(packet);
-				new Thread(new MsgHandler(packet)).start();
+				new Thread(new Message(packet)).start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		// close socket
-		socket.close();
+		//socket.close();
 
+	}
+
+	public void save(String chunkId, int i) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

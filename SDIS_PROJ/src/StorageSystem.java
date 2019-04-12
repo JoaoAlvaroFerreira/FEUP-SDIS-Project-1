@@ -11,6 +11,19 @@ public class StorageSystem implements Serializable{
 
 	private long storage_capacity = 10000000; // 8MBytes
 	private long used_storage;
+	private long space_available = storage_capacity - used_storage;
+
+	public long getStorage_capacity() {
+		return storage_capacity;
+	}
+
+	public long getUsed_storage() {
+		return used_storage;
+	}
+
+	public long getSpace_available() {
+		return space_available;
+	}
 
 	private ArrayList<Chunk> chunks;
 	private ArrayList<FileInfo> fileinfo;
@@ -31,6 +44,34 @@ public class StorageSystem implements Serializable{
 	
 	public ArrayList<Chunk> getChunks() {
 		return chunks;
+	}
+	
+	public boolean isStored(Chunk c) {
+		
+		boolean isEqualChunk = false;
+		
+		for(int i = 0; i < chunks.size(); i++) {
+			if(chunks.get(i).getChunkId() == c.getChunkId()) {
+				isEqualChunk = true;
+			}
+		}
+		
+		return isEqualChunk;
+	}
+	
+	public boolean storeChunk(Chunk c) {
+		byte[] content = c.getContent();
+		boolean chunkStored = false;
+		
+		
+		if(space_available-content.length < 0) {
+			System.out.println("No space available");
+			return chunkStored;
+		}
+		used_storage += content.length; 
+		
+		
+		return chunkStored;
 	}
 	
 	   public void splitIntoChunks(File file, String fileID, int chunk_size) throws IOException
