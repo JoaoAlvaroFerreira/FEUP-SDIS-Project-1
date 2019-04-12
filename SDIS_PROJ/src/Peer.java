@@ -31,11 +31,11 @@ public class Peer implements RMI {
 	private static double version;
 	private static int server_id;
 	private static int peer_id;
-	private static String mcAddr = "224.0.0.3";
+	private static String mcIp = "224.0.0.3";
 	private static int mcPort = 8888;
-	private static String mdbAddr;
+	private static String mdbIp;
 	private static int mdbPort;
-	private static String mdrAddr;
+	private static String mdrIp;
 	private static int mdrPort;
 	
 	private MC mc;
@@ -47,10 +47,10 @@ public class Peer implements RMI {
 	static StorageSystem storage;
 	
 	private int chunkIterator = 0;
-	private Peer(String mcAddr, int mcPort, String mdbAddr, int mdbPort, String mdrAddr, int mdrPort) {
-		mc = new MC(mcAddr, mcPort);
-		mdb = new MCBackup(mdbAddr, mdbPort);
-		mdr = new MCRestore(mdrAddr,mdrPort);
+	private Peer(String mcIp, int mcPort, String mdbIp, int mdbPort, String mdrIp, int mdrPort) throws IOException {
+		mc = new MC(mcIp, mcPort);
+		mdb = new MCBackup(mdbIp, mdbPort);
+		mdr = new MCRestore(mdrIp,mdrPort);
 		
 		new Thread(mc).start();
 		new Thread(mdb).start();
@@ -63,11 +63,11 @@ public class Peer implements RMI {
 		version = Double.parseDouble(args[0]);
 		server_id = Integer.parseInt(args[1]);
 		peer_id = Integer.parseInt(args[2]);
-		mcAddr = args[3];
+		mcIp = args[3];
 		mcPort = Integer.parseInt(args[4]);
-		mdbAddr = args[5];
+		mdbIp = args[5];
 		mdbPort = Integer.parseInt(args[6]);
-		mdrAddr = args[7];
+		mdrIp = args[7];
 		mdrPort = Integer.parseInt(args[8]); 
 		
 		StorageSystem storage = new StorageSystem();
@@ -75,7 +75,7 @@ public class Peer implements RMI {
 		System.out.println("teste");
 		try {
 
-			Peer obj = new Peer(mcAddr, mcPort, mcAddr, mcPort, mcAddr, mcPort);
+			Peer obj = new Peer(mcIp, mcPort, mdbIp, mcPort, mdrIp, mcPort);
 
 			RMI stub = (RMI) UnicastRemoteObject.exportObject(obj, 0);  
 

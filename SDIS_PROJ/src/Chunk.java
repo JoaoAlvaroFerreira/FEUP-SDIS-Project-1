@@ -9,6 +9,7 @@ public class Chunk implements Serializable{
 	private int goalRepDeg;
 	private int currRepDeg;
 	private int size; 
+	public static int chunkMaxSize = 64000;
 	
 
 
