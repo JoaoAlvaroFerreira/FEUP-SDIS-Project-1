@@ -17,13 +17,13 @@ public class Message {
 	public String messageToString() {
 		if(body != null)
 		return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
-				header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF + body;
+		header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF + new String(body, StandardCharsets.UTF_8);
 		else return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
 		header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF;
 	}	
 	
 	public byte[] sendable() {
-		return this.messageToString().getBytes(StandardCharsets.UTF_8);
+		return this.messageToString().getBytes();
 	}
 	
 	public byte[] getBody() 

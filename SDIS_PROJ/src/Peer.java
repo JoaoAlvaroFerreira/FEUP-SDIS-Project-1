@@ -1,11 +1,15 @@
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.registry.LocateRegistry;
@@ -133,7 +137,12 @@ public class Peer implements RMI {
 		}
 		else if(operation.equals("DELETE"))
 		{
-			initiateDelete(file_path);
+			try {
+				initiateDelete(file_path);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 		}
 		else if(operation == "RECLAIM")
@@ -177,7 +186,7 @@ public class Peer implements RMI {
 
 
 	private void initiateDelete(String file_path) {
-		// TODO Auto-generated method stub
+		
 		
 	}
 	public void lastChunk() {
@@ -202,24 +211,15 @@ public class Peer implements RMI {
 
 				
 				
-				for(int i = 0; i < 5; i++) {
+				//TimeUnit.MILLISECONDS.sleep(400);
 					
-					TimeUnit.SECONDS.sleep(i);
-					
-					if(replicationCheck(hash)) {
-						break;
-					}
-					else {
-						mdr.sendMessage(msgByte);
-						System.out.println(msg.messageToString());
-					}
-					}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-		
+			
+		}
 		
 
 	
@@ -252,15 +252,11 @@ public class Peer implements RMI {
     	}
           
     	outStream.close();
-		}
+		
 		lastChunk = false;
 	}
 
 
-	private boolean replicationCheck(String hash) {
-		
-		return false;
-	}
 
 
 	private void initiateBackup(String file_path, int rep_degree) throws InterruptedException {
@@ -275,16 +271,15 @@ public class Peer implements RMI {
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
 			storage.serializeFileInfo();
-			ArrayList<Chunk> chunks = storage.splitIntoChunksExternal(file, fileID, 64000);
+			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 64000);
 			
 			
 				for(Chunk chunk : chunks) {
-			
+					
 					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
 					msgByte = msg.sendable();
 					mdb.sendMessage(msgByte);
-					System.out.println(msg.messageToString());
-					
+				
 					for(int i = 0; i < 5; i++) {
 						
 					TimeUnit.SECONDS.sleep(i);
@@ -439,7 +434,7 @@ public class Peer implements RMI {
 		    {
 		    	chunkIterator++;
 		    	byte[] chunkContent = Files.readAllBytes(file.toPath());
-		    	storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+		    	storage.addChunk(new Chunk(hash,chunkIterator,chunkContent, this.getPeerID()));
 		    }
 		    chunkIterator = 0;
 		   }
@@ -464,4 +459,75 @@ public class Peer implements RMI {
 		public StorageSystem getStorage() {
 			return storage;
 		}
+
+		public ArrayList<Chunk> splitIntoChunksExternal(File file, String fileID, int chunk_size) throws IOException
+	    {
+			ArrayList<Chunk> filechunks = new ArrayList<Chunk>();
+		   System.out.println("In Split");
+	     Boolean lastChunk = false;
+	     File willBeRead = file;
+	     int FILE_SIZE = (int) willBeRead.length();
+
+	     
+	     System.out.println("Total File Size: "+FILE_SIZE);
+	     
+	     byte[] temporary = null;
+	     
+	     try {
+	      InputStream inStream = null;
+	      int totalBytesRead = 0;
+	      
+	      try {
+	       inStream = new BufferedInputStream ( new FileInputStream( willBeRead ));
+	       
+	       int chunkCount = 0;
+	       while ( totalBytesRead < FILE_SIZE )
+	       {
+	       
+	        int bytesRemaining = FILE_SIZE-totalBytesRead;
+	        if ( bytesRemaining < chunk_size ) 
+	        {
+	         chunk_size = bytesRemaining;
+	         lastChunk = true;
+	        }
+	        
+	        temporary = new byte[chunk_size]; //Temporary Byte Array
+	        int bytesRead = inStream.read(temporary, 0, chunk_size);
+	        String temp = new String(temporary, StandardCharsets.UTF_8);
+	    
+	        if ( bytesRead > 0) // If bytes read is not empty
+	        {
+	         totalBytesRead += bytesRead;
+	         chunkCount++;
+	        }
+	 
+	        filechunks.add(new Chunk(fileID,chunkCount, temporary, this.getPeerID()));
+	        
+	        if(bytesRemaining == 0 && lastChunk)
+		        filechunks.add(new Chunk(fileID,chunkCount, null, this.getPeerID()));
+	        
+	        System.out.println("Total Bytes Read: "+ totalBytesRead);
+	       }
+	       
+	      }
+	      finally {
+	       inStream.close();
+	      }
+	     }
+	     catch (NullPointerException ex)
+	     {
+	      ex.printStackTrace();
+	     }
+	     catch (FileNotFoundException ex)
+	     {
+	      ex.printStackTrace();
+	     }
+	     catch (IOException ex)
+	     {
+	      ex.printStackTrace();
+	     }
+	     
+	     return filechunks;
+	    }
+		
 }

@@ -4,6 +4,7 @@ public class Chunk{
 	private byte[] content;
 	private int chunkN;
 	private int size; 
+	private int originalPeerID;
 
 	public static int chunkMaxSize = 64000;
 	
@@ -11,12 +12,13 @@ public class Chunk{
 
 
  
-		public Chunk(String fileID, int chunkn, byte[] content) {
+		public Chunk(String fileID, int chunkn, byte[] content, int peerID) {
 			this.chunkN = chunkn;
 			this.fileID = fileID;
 			this.content = content;
 			this.size = content.length;
 			this.chunkID=fileID + "chunk" + chunkn;
+			this.originalPeerID = peerID;
 		}
 
 		
