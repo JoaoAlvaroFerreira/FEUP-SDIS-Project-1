@@ -1,13 +1,8 @@
-import java.io.Serializable;
-import java.util.ArrayList;
-
-public class Chunk implements Serializable{
+public class Chunk{
 	private String chunkID;
 	private String fileID;
 	private byte[] content;
 	private int chunkN;
-	private int goalRepDeg;
-	private int currRepDeg;
 	private int size; 
 	public static int chunkMaxSize = 64000;
 	
@@ -23,21 +18,6 @@ public class Chunk implements Serializable{
 			this.chunkID=fileID + "chunk" + chunkn;
 		}
 
-		
-		public void setGoalRepDeg(int goalrepdeg){
-			this.goalRepDeg = goalrepdeg;
-		}
-		public void incCurrRepDeg(int currrepdeg){
-			this.currRepDeg++;
-		}
-		
-		public int getGoalRepDeg() {
-			return this.goalRepDeg;
-		}
-		
-		public int getCurrRepDeg() {
-			return this.currRepDeg;
-		}
 		
 		public String getChunkId() {
 			return this.chunkID;

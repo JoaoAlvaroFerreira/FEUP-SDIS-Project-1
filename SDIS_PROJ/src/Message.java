@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 
 public class Message {
 	Header header;
@@ -7,16 +8,21 @@ public class Message {
 	
 	
 	
-	public Message(String messageType, String version, int senderId, String fileId,int chunkNo, byte[] body) {
-		this.header= new Header(messageType, version, senderId, fileId, chunkNo, 0);
+	public Message(String messageType, String version, int senderId, String fileId,int chunkNo, int ReplicationDeg, byte[] body) {
+		//<MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
+		this.header= new Header(messageType, version, senderId, fileId, chunkNo, ReplicationDeg);
 		this.body = body;
 	}
 	
 	
 	public String messageToString() {
 		return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
-				header.getChunkNo() + " " + CRLF + CRLF + body;
+				header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF + body;
 	}	
+	
+	public byte[] sendable() {
+		return this.messageToString().getBytes(StandardCharsets.UTF_8);
+	}
 	
 	public byte[] getBody() 
 	{

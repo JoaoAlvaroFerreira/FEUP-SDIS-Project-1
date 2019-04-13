@@ -12,6 +12,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 
 
@@ -20,7 +21,7 @@ public class Peer implements RMI {
 
 
 	//final static int PORT = 8888;
-	private static double version;
+	private static String version;
 	private static int server_id;
 	private static int peerID;
 	private static String mcIp = "224.0.0.3";
@@ -53,7 +54,7 @@ public class Peer implements RMI {
 
 	public static void main(String[] args) throws UnknownHostException, InterruptedException { 
 
-		version = Double.parseDouble(args[0]);
+		setVersion(args[0]);
 		server_id = Integer.parseInt(args[1]);
 		peerID = Integer.parseInt(args[2]);
 		mcIp = args[3];
@@ -111,7 +112,12 @@ public class Peer implements RMI {
 		if(operation.equals("BACKUP"))
 		{
 			
-			initiateBackup(file_path, rep_degree);
+			try {
+				initiateBackup(file_path, rep_degree);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 		else if(operation.equals("RESTORE"))
@@ -133,7 +139,7 @@ public class Peer implements RMI {
 	}
 	
 
-	/* backup velho, não usar, manter como referencia
+	/* backup velho, no usar, manter como referencia
 	 
 	public void backup(String file_path, int rep_degree){
 		
@@ -176,12 +182,13 @@ public class Peer implements RMI {
 	}
 
 
-	private void initiateBackup(String file_path, int rep_degree) {
+	private void initiateBackup(String file_path, int rep_degree) throws InterruptedException {
 
 		File file = new File(file_path);
 		String fileID = generateFileID(file);
 		System.out.println("FileID Hash:" + fileID);
 		System.out.println("Done hashing");
+		byte[] msg = null;
 	
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
@@ -190,12 +197,21 @@ public class Peer implements RMI {
 			
 			
 				for(Chunk chunk : chunks) {
-					//send message with chunk
+					//PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent()).sendable();
+					mdb.sendMessage(msg);
 					
-					while(storedCount < rep_degree) {
+					for(int i = 0; i < 5; i++) {
 						
+					TimeUnit.SECONDS.sleep(i);
+					
+					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) == rep_degree) {
+						break;
 					}
-					resetStoredCount();
+					mdb.sendMessage(msg);
+					}
+					
+				
 				}
 			
 			//saveChunks();
@@ -208,12 +224,17 @@ public class Peer implements RMI {
 		
 	}
 	
-	private void resetStoredCount() {
-		storedCount = 0;
+	private int storedCheck(int chunkN, String fileID) {
+		int timesSaved = 0;
+		
+		for(BackUpInfo info : storage.getBackUps()) {
+			if(chunkN == info.getChunkN() && info.getFileID().equals(fileID))
+				timesSaved++;
+		}
+		
+		return timesSaved;
 	}
-	public void increaseStoredCount() { //RESPOSTA AO STORED
-		storedCount++;
-	}
+
 
 
 
@@ -224,6 +245,19 @@ public class Peer implements RMI {
 	public int getPeerID() {
 		return peerID;
 	}
+	
+	public Channel getMC() {
+		return mc;
+	}
+	
+	public Channel getMDB() {
+		return mdb;
+	}
+
+	public Channel getMDR() {
+		return mdr;
+	}
+
 
 
 
@@ -330,5 +364,20 @@ public class Peer implements RMI {
 			   } 
 			
 			 
+		}
+
+
+		public String getVersion() {
+			return version;
+		}
+
+
+		public static void setVersion(String version) {
+			Peer.version = version;
+		}
+
+
+		public StorageSystem getStorage() {
+			return storage;
 		}
 }

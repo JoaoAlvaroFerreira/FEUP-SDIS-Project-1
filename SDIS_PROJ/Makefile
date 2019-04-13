@@ -18,17 +18,16 @@ CLIENTCLASSES = \
 SERVERCLASSES = \
 	src/Peer.java \
 	src/Chunk.java \
+	src/BackUpInfo.java \
 	src/FileInfo.java \
 	src/StorageSystem.java \
 	
 MESSAGECLASSES = \
 	src/Body.java \
 	src/Header.java \
-	src/MC.java \
-	src/MCBackup.java \
-	src/MCRestore.java \
-	src/PutChunk.java \
-	src/Stored.java \
+	src/Message.java \
+	src/MessageParser.java \
+	src/Channel.java \
  
 default: classes
  

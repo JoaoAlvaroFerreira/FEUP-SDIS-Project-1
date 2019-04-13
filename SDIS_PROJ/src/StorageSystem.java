@@ -34,12 +34,14 @@ public class StorageSystem{
 
 	private ArrayList<Chunk> chunks;
 	private ArrayList<FileInfo> fileinfo;
+	private ArrayList<BackUpInfo> backupinfo;
 	
 	public StorageSystem(int peerID) {
 		this.peerID = peerID;
 		used_storage = 0;
 		chunks = new ArrayList<Chunk>();
 		fileinfo = new ArrayList<FileInfo>();
+		backupinfo = new ArrayList<BackUpInfo>();
 		
 		try {
 			loadFileInfo();
@@ -50,12 +52,14 @@ public class StorageSystem{
 	
 	}
 	
-	public void addChunk(Chunk c) {
+	public boolean addChunk(Chunk c) {
 		if(storage_capacity > used_storage + c.getsize()) {
 		used_storage += c.getsize();
 		
 		chunks.add(c);
+		return true;
 		}
+		return false;
 	}
 	
 	
@@ -63,6 +67,11 @@ public class StorageSystem{
 	public ArrayList<Chunk> getChunks() {
 		return chunks;
 	}
+	
+	public ArrayList<BackUpInfo> getBackUps() {
+		return backupinfo;
+	}
+
 	
 	public boolean isStored(Chunk c) {
 		
@@ -120,7 +129,7 @@ public class StorageSystem{
        int chunkCount = 0;
        while ( totalBytesRead < FILE_SIZE )
        {
-        String PART_NAME = "data"+chunkCount+".bin";
+       
         int bytesRemaining = FILE_SIZE-totalBytesRead;
         if ( bytesRemaining < chunk_size ) 
         {
@@ -151,6 +160,10 @@ public class StorageSystem{
        inStream.close();
       }
      }
+     catch (NullPointerException ex)
+     {
+      ex.printStackTrace();
+     }
      catch (FileNotFoundException ex)
      {
       ex.printStackTrace();
@@ -163,7 +176,7 @@ public class StorageSystem{
      return filechunks;
     }
 	
-	/* FUNÇÃO VELHA, NÃO USAR, IMPORTANTE PARA REFERENCIA
+	/* IMPORTANTE PARA REFERENCIA
 	   public void splitIntoChunks(File file, String fileID, int chunk_size) throws IOException
 	    {
 		   System.out.println("In Split");
