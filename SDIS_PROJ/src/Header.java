@@ -1,5 +1,3 @@
-
-
 public class Header {
 	String messageType;
 	String version;

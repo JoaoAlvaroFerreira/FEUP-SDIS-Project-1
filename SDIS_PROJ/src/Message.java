@@ -1,89 +1,26 @@
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.util.Arrays;
 
-public class Message implements Runnable {
-	private byte[] msg;
-	private String channelType;
+public class Message {
+	Header header;
+	String CRLF = "\r\n";
+	byte[] body;
+	public static final int MAX_CHUNK_SIZE = 64000;
 	
-	public Message(byte[] msg, String channelType){
-		this.msg=msg;
-		this.channelType=channelType;
-	}
-
-	@Override
-	public void run() {
-		String channel = channelType;
-		
-		if(channel.equals("mc"))
-		{
-			try {
-				Peer.getMc().sendMessage(msg);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-		else if(channel.equals("mdb"))
-		{
-			try {
-				Peer.getMdb().sendMessage(msg);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		else if(channel.equals("mdr"))
-		{
-			try {
-				Peer.getMdr().sendMessage(msg);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	
+	
+	public Message(String messageType, String version, int senderId, String fileId,int chunkNo, byte[] body) {
+		this.header= new Header(messageType, version, senderId, fileId, chunkNo, 0);
+		this.body = body;
 	}
 	
-	/*static byte[] getBody(DatagramPacket packet) {
-		ByteArrayInputStream stream = new ByteArrayInputStream(packet.getData());
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-		String header="";
-		
-		
-		try {
-			header += reader.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		int body_idx = header.length()+2*MsgForwarder.CRLF.length();
-		
-		byte[] body = Arrays.copyOfRange(packet.getData(),body_idx ,
-				packet.getLength());
-
-		
-		return body;
+	
+	public String messageToString() {
+		return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
+				header.getChunkNo() + " " + CRLF + CRLF + body;
+	}	
+	
+	public byte[] getBody() 
+	{
+		return this.body;
 	}
-
-	public static String[] getHeader(DatagramPacket packet){
-		ByteArrayInputStream stream = new ByteArrayInputStream(packet.getData());
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-		String header = "";
-		try {
-			header = reader.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return header.split(" ");
-	}*/
-
-
+	
 }

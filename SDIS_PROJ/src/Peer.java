@@ -2,7 +2,6 @@
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,14 +41,9 @@ public class Peer implements RMI {
 	private static String mdrIp;
 	private static int mdrPort;
 	
-	private static MC mc;
-	private static MCBackup mdb;
-	private static MCRestore mdr;
-	
-	
-	public static String CHUNKS  = "CHUNKS_";
-	public static String RESTORES  = "RESTORES_";
-	public static String DISK = "disk_";
+	private static Channel mc;
+	private static Channel mdb;
+	private static Channel mdr;
 
 
 	
@@ -57,43 +51,13 @@ public class Peer implements RMI {
 	
 	private int chunkIterator = 0;
 	private Peer(String mcIp, int mcPort, String mdbIp, int mdbPort, String mdrIp, int mdrPort) throws IOException {
-		mc = new MC(mcIp, mcPort);
-		mdb = new MCBackup(mdbIp, mdbPort);
-		mdr = new MCRestore(mdrIp,mdrPort);
+		mc = new Channel(mcIp, mcPort, this);
+		mdb = new Channel(mdbIp, mdbPort, this);
+		mdr = new Channel(mdrIp,mdrPort, this);
 		
 		new Thread(mc).start();
 		new Thread(mdb).start();
 		new Thread(mdr).start();
-	}
-	
-	
-	public static MC getMc() {
-		return mc;
-	}
-
-
-	public static void setMc(MC mc) {
-		Peer.mc = mc;
-	}
-
-
-	public static MCBackup getMdb() {
-		return mdb;
-	}
-
-
-	public static void setMdb(MCBackup mdb) {
-		Peer.mdb = mdb;
-	}
-
-
-	public static MCRestore getMdr() {
-		return mdr;
-	}
-
-
-	public static void setMdr(MCRestore mdr) {
-		Peer.mdr = mdr;
 	}
 
 
@@ -154,8 +118,6 @@ public class Peer implements RMI {
 			e.printStackTrace();
 		}
 		
-		Chunk.backup();
-		
 	}
 	
 	public void restore(String file_path) {
@@ -169,8 +131,6 @@ public class Peer implements RMI {
 			System.err.println("IO Exception: " + e.toString());
 			e.printStackTrace();
 		}
-		
-		Chunk.restore();
 	}
 
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
@@ -179,39 +139,59 @@ public class Peer implements RMI {
 		if(operation.equals("BACKUP"))
 		{
 			
-			backup(file_path, rep_degree);
-			//System.out.println("in operation back up");
+			initiateBackup(file_path, rep_degree);
 			
-			
-		
-			//new Thread(new Backup(file_path,rep_degree));
 		}
 		else if(operation.equals("RESTORE"))
 		{
-			restore(file_path);
+			initiateRestore(file_path);
 			
 		}
 		else if(operation.equals("DELETE"))
 		{
-			//new Thread(new Delete(file_path));
+			initiateDelete(file_path);
+		
 		}
 		else if(operation == "RECLAIM")
 		{
-			//new Thread(new Reclaim(space));
+			initiateReclaim(space);
 		}
 
 
 	}
-
-
 	
+
+
+
+	private void initiateReclaim(double space) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	private void initiateDelete(String file_path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	private void initiateRestore(String file_path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	private void initiateBackup(String file_path, int rep_degree) {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 	public void printMsg() {  
 		System.out.println("This is an example RMI program");  
 	}
 	
-	public static int getPeerID() {
+	public int getPeerID() {
 		return peerID;
 	}
 	
@@ -296,64 +276,26 @@ public class Peer implements RMI {
 	    	return sha256hashing(aux);
 	    }
 	 
-public void getChunksFromFile(String hash) throws IOException { //manda-se o ID do file (hashed)
-		   System.out.println("getChunks");
+		public void getChunksFromFile(String hash) throws IOException { 
+				   System.out.println("getChunks");
 		   System.out.println("Hash: "+hash);
 		   
+		   if(Files.exists(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))){
 		   File folder = new File("Peer"+this.getPeerID() + "/backup/"+hash+"/");
 		   File[] files = folder.listFiles();
 		   
-	        for (File file : files)
-	        {
-	        	chunkIterator++;
-	        	byte[] chunkContent = Files.readAllBytes(file.toPath());
-	        	//storage.addChunk(new Chunk(hash,chunkIterator,chunkContent)); 				ALTERAR POR CAUSA DO CONSTRUTOR
-	        }
-	        chunkIterator = 0;
-		
-		   /*if(Files.exists(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))) {
-		 Files.walk(Paths.get("Peer"+this.getPeerID() + "/backup/"+hash+"/"))
-	     .forEach(p -> {
-	        try {
-	        	chunkIterator++;
-	           
-	        	InputStream in = new FileInputStream(p.toString());
-	        			
-	        	 ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-	        	    int nRead;
-	        	    byte[] data = new byte[1024];
-	        	    while ((nRead = in.read(data, 0, data.length)) != -1) {
-	        	        buffer.write(data, 0, nRead);
-	        	    }
-	        	 
-	        	    buffer.flush();
-	        	    byte[] chunkContent = buffer.toByteArray();
-	           
-
-	            storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
-	            
-	            in.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    });
-		 chunkIterator = 0;
-	
-	 }
-		   else {
+		    for (File file : files)
+		    {
+		    	chunkIterator++;
+		    	byte[] chunkContent = Files.readAllBytes(file.toPath());
+		    	storage.addChunk(new Chunk(hash,chunkIterator,chunkContent));
+		    }
+		    chunkIterator = 0;
+		   }
+		   else{
 			   System.out.println("Chunks you're looking for don't exist");
-		   } */
-	}
-
-
-public static void saveStorage() throws IOException {
-	FileOutputStream stream = new FileOutputStream(Peer.DISK);
-
-	ObjectOutputStream out = new ObjectOutputStream(stream);
-
-	out.writeObject(storage);
-
-	out.close();
-	
-}
+			   } 
+			
+			 
+		}
 }
