@@ -1,5 +1,6 @@
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -34,7 +35,7 @@ public class Peer implements RMI {
 	private static Channel mc;
 	private static Channel mdb;
 	private static Channel mdr;
-	private int storedCount = 0;
+	private boolean lastChunk = false;
 
 
 	
@@ -91,7 +92,7 @@ public class Peer implements RMI {
 	}
 	
 	
-	
+	/*
 	
 	public void restore(String file_path) {
 		String hash = storage.lookUp(file_path);
@@ -104,7 +105,7 @@ public class Peer implements RMI {
 			System.err.println("IO Exception: " + e.toString());
 			e.printStackTrace();
 		}
-	}
+	} */
 
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
 
@@ -122,7 +123,12 @@ public class Peer implements RMI {
 		}
 		else if(operation.equals("RESTORE"))
 		{
-			initiateRestore(file_path);
+			try {
+				initiateRestore(file_path);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 		}
 		else if(operation.equals("DELETE"))
@@ -174,11 +180,83 @@ public class Peer implements RMI {
 		// TODO Auto-generated method stub
 		
 	}
+	public void lastChunk() {
+		this.lastChunk = true;
+	}
 
 
-	private void initiateRestore(String file_path) {
-		// TODO Auto-generated method stub
+	private void initiateRestore(String file_path) throws IOException { //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 		
+		String hash = storage.lookUp(file_path);
+		int chunkn = 0;
+		byte[] msgByte = null;
+		Message msg;
+			///getChunksFromFile(hash);
+		while(!lastChunk) {
+			chunkn++;
+			msg = new Message("GETCHUNK", getVersion(), this.getPeerID(),hash,chunkn, 0, null);
+			msgByte = msg.sendable();
+			System.out.println(msg.messageToString());
+			try {
+				mdr.sendMessage(msgByte);
+
+				
+				
+				/*for(int i = 0; i < 5; i++) {
+					
+					TimeUnit.SECONDS.sleep(i);
+					
+					if(replicationCheck(hash)) {
+						break;
+					}
+					mdr.sendMessage(msgByte);
+					}*/
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		
+		
+
+	
+		String newfilename = "Peer"+this.getPeerID() + "/restore/"+file_path;
+
+        File file = new File(newfilename);
+        
+        
+       
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+            try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+
+       
+    	OutputStream outStream = new FileOutputStream(file);
+       
+    	for(int i = 0; i < storage.getChunks().size(); i++) {
+    		
+    		if(hash == storage.getChunks().get(i).getFileID()) {
+    		
+    		byte[] content = storage.getChunks().get(i).getContent();
+    		 outStream.write(content);
+    		}
+    	}
+          
+    	outStream.close();
+		}
+		lastChunk = false;
+	}
+
+
+	private boolean replicationCheck(String hash) {
+		
+		return false;
 	}
 
 
@@ -188,7 +266,8 @@ public class Peer implements RMI {
 		String fileID = generateFileID(file);
 		System.out.println("FileID Hash:" + fileID);
 		System.out.println("Done hashing");
-		byte[] msg = null;
+		byte[] msgByte = null;
+		Message msg;
 	
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
@@ -197,20 +276,22 @@ public class Peer implements RMI {
 			
 			
 				for(Chunk chunk : chunks) {
-					System.out.println("SENT CHUNK SIZE: " + chunk.getContent().length);
-					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent()).sendable();
-					mdb.sendMessage(msg);
-					
+			
+					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
+					msgByte = msg.sendable();
+					mdb.sendMessage(msgByte);
+					System.out.println(msg.messageToString()+"SENT CHUNK SIZE: " + chunk.getContent().length);
+					/*
 					for(int i = 0; i < 5; i++) {
 						
 					TimeUnit.SECONDS.sleep(i);
 					
 					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) == rep_degree) {
 						break;
+					} 
+					else mdb.sendMessage(msgByte); 
 					}
-					mdb.sendMessage(msg);
-					}
-					
+					*/
 				
 				}
 			
@@ -222,7 +303,7 @@ public class Peer implements RMI {
 		}
 		
 		
-	}
+}
 	
 	private int storedCheck(int chunkN, String fileID) {
 		int timesSaved = 0;
@@ -238,9 +319,6 @@ public class Peer implements RMI {
 
 
 
-	public void printMsg() {  
-		System.out.println("This is an example RMI program");  
-	}
 	
 	public int getPeerID() {
 		return peerID;
@@ -283,7 +361,7 @@ public class Peer implements RMI {
 		
 	}
 	
-	
+	/*
 	public void restoreFile(String  filename, String hash) throws IOException {
 		
 		System.out.println("restore file");
@@ -316,7 +394,7 @@ public class Peer implements RMI {
 
 	}
 	
-
+*/
 	 public static String sha256hashing(String base) {
 	        try{
 	            MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -337,7 +415,7 @@ public class Peer implements RMI {
 	 
 	 String generateFileID(File file) {
 	    	
-	    	String aux  = this.peerID + file.getName() + file.lastModified();
+	    	String aux  =file.getName() + file.lastModified();
 			
 			
 	    	return sha256hashing(aux);

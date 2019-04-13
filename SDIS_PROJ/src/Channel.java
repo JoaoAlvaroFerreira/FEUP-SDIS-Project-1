@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 public class Channel extends Thread{
 
 	protected MulticastSocket socket = null;
-    protected byte[] buf = new byte[1280000];
+    protected byte[] buf = new byte[64000];
     private String IP;
     private int Port;
     private Peer peer;
@@ -38,7 +38,7 @@ public class Channel extends Thread{
         this.socket.close();
     }
     	catch(IOException ex) {
-    		System.out.println("MDR Exception:" + ex.toString());
+    		System.out.println("Channel Exception:" + ex.toString());
     		ex.printStackTrace();
     		}
     	}

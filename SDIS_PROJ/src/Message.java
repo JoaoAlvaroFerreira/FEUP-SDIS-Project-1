@@ -2,7 +2,7 @@ import java.nio.charset.StandardCharsets;
 
 public class Message {
 	Header header;
-	String CRLF = "\r\n";
+	public static String CRLF = "" + (char) 0xD  + (char) 0xA;
 	byte[] body;
 	
 	
@@ -15,12 +15,15 @@ public class Message {
 	
 	
 	public String messageToString() {
+		if(body != null)
 		return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
 				header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF + body;
+		else return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
+		header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF;
 	}	
 	
 	public byte[] sendable() {
-		return this.messageToString().getBytes(StandardCharsets.UTF_8);
+		return this.messageToString().getBytes();
 	}
 	
 	public byte[] getBody() 
