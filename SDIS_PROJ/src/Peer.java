@@ -1,28 +1,17 @@
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.stream.Stream;
 
 
 
@@ -44,6 +33,7 @@ public class Peer implements RMI {
 	private static Channel mc;
 	private static Channel mdb;
 	private static Channel mdr;
+	private int storedCount = 0;
 
 
 	
@@ -99,26 +89,8 @@ public class Peer implements RMI {
 		}
 	}
 	
-	public void backup(String file_path, int rep_degree){
-		File file = new File(file_path);
-		String fileID = generateFileID(file);
-		System.out.println("FileID Hash:" + fileID);
-		System.out.println("Done hashing");
-		try {
-			System.out.println("In try");
-			System.out.println("File Path: "+file_path);
-			storage.addFile(file_path, file.lastModified(), fileID);
-			storage.serializeFileInfo();
-			storage.splitIntoChunks(file, fileID, 64000);
-			System.out.println("Done SPLITTING");
-			saveChunks();
-			System.out.println("Saved chunks");
-		} catch (IOException e) {
-			System.err.println("IO Exception: " + e.toString());
-			e.printStackTrace();
-		}
-		
-	}
+	
+	
 	
 	public void restore(String file_path) {
 		String hash = storage.lookUp(file_path);
@@ -161,7 +133,30 @@ public class Peer implements RMI {
 	}
 	
 
-
+	/* backup velho, não usar, manter como referencia
+	 
+	public void backup(String file_path, int rep_degree){
+		
+		File file = new File(file_path);
+		String fileID = generateFileID(file);
+		System.out.println("FileID Hash:" + fileID);
+		System.out.println("Done hashing");
+		try {
+			System.out.println("In try");
+			System.out.println("File Path: "+file_path);
+			storage.addFile(file_path, file.lastModified(), fileID);
+			storage.serializeFileInfo();
+			storage.splitIntoChunks(file, fileID, 64000);
+			System.out.println("Done SPLITTING");
+			saveChunks();
+			System.out.println("Saved chunks");
+		} catch (IOException e) {
+			System.err.println("IO Exception: " + e.toString());
+			e.printStackTrace();
+		}
+		
+	}
+	*/
 
 	private void initiateReclaim(double space) {
 		// TODO Auto-generated method stub
@@ -182,9 +177,44 @@ public class Peer implements RMI {
 
 
 	private void initiateBackup(String file_path, int rep_degree) {
-		// TODO Auto-generated method stub
+
+		File file = new File(file_path);
+		String fileID = generateFileID(file);
+		System.out.println("FileID Hash:" + fileID);
+		System.out.println("Done hashing");
+	
+		try {
+			storage.addFile(file_path, file.lastModified(), fileID);
+			storage.serializeFileInfo();
+			ArrayList<Chunk> chunks = storage.splitIntoChunksExternal(file, fileID, 64000);
+			
+			
+				for(Chunk chunk : chunks) {
+					//send message with chunk
+					
+					while(storedCount < rep_degree) {
+						
+					}
+					resetStoredCount();
+				}
+			
+			//saveChunks();
+			
+		} catch (IOException e) {
+			System.err.println("IO Exception: " + e.toString());
+			e.printStackTrace();
+		}
+		
 		
 	}
+	
+	private void resetStoredCount() {
+		storedCount = 0;
+	}
+	public void increaseStoredCount() { //RESPOSTA AO STORED
+		storedCount++;
+	}
+
 
 
 	public void printMsg() {  
@@ -194,7 +224,9 @@ public class Peer implements RMI {
 	public int getPeerID() {
 		return peerID;
 	}
-	
+
+
+
 	public void saveChunks() throws IOException{
 		
 		for(int i = 0; i < storage.getChunks().size(); i++) {
@@ -216,6 +248,7 @@ public class Peer implements RMI {
 		}
 		
 	}
+	
 	
 	public void restoreFile(String  filename, String hash) throws IOException {
 		

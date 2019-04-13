@@ -13,9 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-public class StorageSystem implements Serializable{
+public class StorageSystem{
 
-	private long storage_capacity = 10000000; // 8MBytes
+	private long storage_capacity = 100000000; 
 	private long used_storage;
 	private long space_available = storage_capacity - used_storage;
 	private int peerID;
@@ -97,6 +97,73 @@ public class StorageSystem implements Serializable{
 		return chunkStored;
 	}
 	
+	public ArrayList<Chunk> splitIntoChunksExternal(File file, String fileID, int chunk_size) throws IOException
+    {
+		ArrayList<Chunk> filechunks = new ArrayList<Chunk>();
+	   System.out.println("In Split");
+     Boolean lastChunk = false;
+     File willBeRead = file;
+     int FILE_SIZE = (int) willBeRead.length();
+
+     
+     System.out.println("Total File Size: "+FILE_SIZE);
+     
+     byte[] temporary = null;
+     
+     try {
+      InputStream inStream = null;
+      int totalBytesRead = 0;
+      
+      try {
+       inStream = new BufferedInputStream ( new FileInputStream( willBeRead ));
+       
+       int chunkCount = 0;
+       while ( totalBytesRead < FILE_SIZE )
+       {
+        String PART_NAME = "data"+chunkCount+".bin";
+        int bytesRemaining = FILE_SIZE-totalBytesRead;
+        if ( bytesRemaining < chunk_size ) 
+        {
+         chunk_size = bytesRemaining;
+         System.out.println("CHUNK_SIZE: "+chunk_size);
+         lastChunk = true;
+        }
+        
+        temporary = new byte[chunk_size]; //Temporary Byte Array
+        int bytesRead = inStream.read(temporary, 0, chunk_size);
+        
+        if ( bytesRead > 0) // If bytes read is not empty
+        {
+         totalBytesRead += bytesRead;
+         chunkCount++;
+        }
+        
+        filechunks.add(new Chunk(fileID,chunkCount, temporary));
+        
+        if(bytesRemaining == 0 && lastChunk)
+	        filechunks.add(new Chunk(fileID,chunkCount, new byte[chunk_size]));
+        
+        System.out.println("Total Bytes Read: "+ totalBytesRead);
+       }
+       
+      }
+      finally {
+       inStream.close();
+      }
+     }
+     catch (FileNotFoundException ex)
+     {
+      ex.printStackTrace();
+     }
+     catch (IOException ex)
+     {
+      ex.printStackTrace();
+     }
+     
+     return filechunks;
+    }
+	
+	/* FUNÇÃO VELHA, NÃO USAR, IMPORTANTE PARA REFERENCIA
 	   public void splitIntoChunks(File file, String fileID, int chunk_size) throws IOException
 	    {
 		   System.out.println("In Split");
@@ -161,6 +228,8 @@ public class StorageSystem implements Serializable{
 	     
 	    }
 	   
+	   */
+	   
 	   public boolean moreRecent(FileInfo a, FileInfo b) {
 	        if (a.getDateModified() > b.getDateModified())
 	            return true; // highest value first
@@ -179,12 +248,12 @@ public class StorageSystem implements Serializable{
 				System.out.println("FILENAME: "+fileinfo.get(i).getFilename()+" FILEID: "+fileinfo.get(i).getFileID());
 				
 			if(fileinfo.get(i).getFilename().equals(filename))
-				aux = fileinfo.get(i).getFileID();
-				//samename.add(fileinfo.get(i));
+				//aux = fileinfo.get(i).getFileID();
+				samename.add(fileinfo.get(i));
 				
 			}
 
-			/*if(samename.size() == 1) {
+			if(samename.size() == 1) {
 			aux = samename.get(0).getFileID();
 			 System.out.println("aux: "+aux);
 			}
@@ -196,7 +265,7 @@ public class StorageSystem implements Serializable{
 						aux = samename.get(j).getFileID();
 						}
 						}
-					}*/
+					}
 			
 			
 			return aux;
