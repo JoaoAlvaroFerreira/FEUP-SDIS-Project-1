@@ -4,7 +4,6 @@ public class Message {
 	Header header;
 	String CRLF = "\r\n";
 	byte[] body;
-	public static final int MAX_CHUNK_SIZE = 64000;
 	
 	
 	

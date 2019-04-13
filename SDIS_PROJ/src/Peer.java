@@ -197,7 +197,7 @@ public class Peer implements RMI {
 			
 			
 				for(Chunk chunk : chunks) {
-					//PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+					System.out.println("SENT CHUNK SIZE: " + chunk.getContent().length);
 					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent()).sendable();
 					mdb.sendMessage(msg);
 					
@@ -214,7 +214,7 @@ public class Peer implements RMI {
 				
 				}
 			
-			//saveChunks();
+		
 			
 		} catch (IOException e) {
 			System.err.println("IO Exception: " + e.toString());
@@ -265,7 +265,7 @@ public class Peer implements RMI {
 		
 		for(int i = 0; i < storage.getChunks().size(); i++) {
 			
-			System.out.println("PeerID: "+this.getPeerID());
+			//System.out.println("PeerID: "+this.getPeerID());
 			 String filename = "Peer"+this.getPeerID() + "/backup/"+storage.getChunks().get(i).getFileID()+"/chk"+storage.getChunks().get(i).getChunkN();
 
 	         File file = new File(filename);

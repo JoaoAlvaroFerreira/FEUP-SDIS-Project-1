@@ -33,9 +33,11 @@ public class MessageParser implements Runnable {
 		String CRLF = "\r\n";
 		int bodyI = msg.length+2*CRLF.length();
 		
+		
 		byte[] body = Arrays.copyOfRange(packet.getData(),bodyI ,
 				packet.getLength());
 
+		
 		
 		switch(messageType) {
 		
@@ -43,6 +45,7 @@ public class MessageParser implements Runnable {
 			Chunk chunk = new Chunk(fileID, chunkNo, body);
 			if(peer.getStorage().addChunk(chunk)) {
 
+				System.out.println("SAVED CHUNK SIZE: " + body.length);
 			byte[] reply = new Message("STORED",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, null).sendable();
 			try {
 				peer.getMC().sendMessage(reply);

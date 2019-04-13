@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 public class Channel extends Thread{
 
 	protected MulticastSocket socket = null;
-    protected byte[] buf = new byte[256];
+    protected byte[] buf = new byte[1280000];
     private String IP;
     private int Port;
     private Peer peer;

@@ -23,7 +23,6 @@ SERVERCLASSES = \
 	src/StorageSystem.java \
 	
 MESSAGECLASSES = \
-	src/Body.java \
 	src/Header.java \
 	src/Message.java \
 	src/MessageParser.java \
