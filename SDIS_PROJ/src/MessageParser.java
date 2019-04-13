@@ -61,7 +61,7 @@ public class MessageParser implements Runnable {
 		
 		case "PUTCHUNK":
 			System.out.println("AQUI");
-			Chunk chunk = new Chunk(fileID, chunkNo, body, peer.getPeerID());
+			Chunk chunk = new Chunk(fileID, chunkNo, body);
 			if(peer.getStorage().addChunk(chunk)) {
 
 			Message stored = new Message("STORED",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, null);
@@ -102,10 +102,23 @@ public class MessageParser implements Runnable {
 		case "GETCHUNK": //CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 			
 			for(Chunk chunkSend: peer.getStorage().getChunks()) {
+				
 			if(chunkSend.getFileID().equals(fileID) && chunkSend.getChunkN()==chunkNo) {
+				
+				Random rand = new Random();
+				int  n = rand.nextInt(400) + 1;
+				
+				
+				try {
+					Thread.sleep(n);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} 
+
 				Message sendChunk = new Message("CHUNK",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, chunkSend.getContent());
 				byte[] reply = sendChunk.sendable();
-				System.out.println(sendChunk.messageToString()+"SENT CHUNK SIZE: " + chunkSend.getContent().length);
+				//System.out.println(sendChunk.messageToString());
+				System.out.println("CHUNK");
 				try {
 					peer.getMDR().sendMessage(reply);
 				} catch (UnknownHostException e) {
@@ -121,7 +134,7 @@ public class MessageParser implements Runnable {
 		break;
 		
 		case "CHUNK": //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-			Chunk gotChunk = new Chunk(fileID, chunkNo, body, peer.getPeerID());
+			Chunk gotChunk = new Chunk(fileID, chunkNo, body);
 			peer.getStorage().addChunk(gotChunk);
 			if(gotChunk.getContent().length < 64000)
 				peer.lastChunk();

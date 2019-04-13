@@ -56,8 +56,11 @@ public class StorageSystem{
 		if(storage_capacity > used_storage + c.getsize()) {
 		used_storage += c.getsize();
 		
-		chunks.add(c);
-		return true;
+				if(!isStored(c)) {
+					chunks.add(c);
+					return true;
+				}
+		
 		}
 		return false;
 	}
@@ -91,20 +94,7 @@ public class StorageSystem{
 		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
-	public boolean storeChunk(Chunk c) {
-		byte[] content = c.getContent();
-		boolean chunkStored = false;
-		
-		
-		if(space_available-content.length < 0) {
-			System.out.println("No space available");
-			return chunkStored;
-		}
-		used_storage += content.length; 
-		
-		
-		return chunkStored;
-	}
+
 	   
 	   public boolean moreRecent(FileInfo a, FileInfo b) {
 	        if (a.getDateModified() > b.getDateModified())
