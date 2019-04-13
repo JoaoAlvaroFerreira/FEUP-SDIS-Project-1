@@ -23,12 +23,6 @@ public class TestApp {
     	peer_ap = args[0];
         sub_protocol = args[1];
         
-        for(String item : args) {
-        	
-        	System.out.println("Arg: "+item);
-        }
-     
-        
         
         try {       	
             
@@ -38,17 +32,15 @@ public class TestApp {
             // Looking up the registry for the remote object 
             RMI stub = (RMI) registry.lookup(peer_ap); 
        
-            // Calling the remote method using the obtained object 
-            //stub.printMsg();
-            //stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
-        	System.out.println("PROTOCOLO "+sub_protocol);
+          
+        	System.out.println("PROTOCOL:  "+sub_protocol);
         	
             if(sub_protocol.equals("BACKUP"))
             {
-            	System.out.println("in testapp back up");
+            
             	if(args.length != 4) {
-            		System.out.println("Invalid arguments for backup Protocol");
-            		System.out.println("TestApp backup <file_path> <replication_degree>");
+            		System.out.println("Invalid arguments for Backup protocol");
+            		System.out.println("TestApp BACKUP <file_path> <replication_degree>");
             		return;
             	}
             	ReplicationDeg = Integer.parseInt(args[3]);
@@ -59,8 +51,8 @@ public class TestApp {
             else if(sub_protocol.equals("RESTORE"))
             {
             	if(args.length != 3) {
-            		System.out.println("Invalid arguments for restore Protocol");
-            		System.out.println("TestApp restore <file_path>");
+            		System.out.println("Invalid arguments for Restore protocol");
+            		System.out.println("TestApp RESTORE  <file_path>");
             		return;
             	}
             	
@@ -71,8 +63,8 @@ public class TestApp {
             else if(sub_protocol.equals("DELETE"))
             {
             	if(args.length != 3) {
-            		System.out.println("Invalid arguments for delete Protocol");
-            		System.out.println("TestApp backup <file_path> ");
+            		System.out.println("Invalid arguments for Delete protocol");
+            		System.out.println("TestApp DELETE <file_path> ");
             		return;
             	}
             	
@@ -83,8 +75,8 @@ public class TestApp {
             else if(sub_protocol.equals("RECLAIM"))
             {
             	if(args.length != 3) {
-            		System.out.println("Invalid arguments for reclaim Protocol");
-            		System.out.println("TestApp reclaim <space>");
+            		System.out.println("Invalid arguments for Reclaim protocol");
+            		System.out.println("TestApp RECLAIM <space>");
             		return;
             	}
             	
@@ -96,7 +88,7 @@ public class TestApp {
             
                  
            } catch (Exception e) {
-           	System.err.println("TestApp exception: " + e.toString());
+           	System.err.println("TestApp Exception: " + e.toString());
           	    e.printStackTrace();
            }
         

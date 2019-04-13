@@ -90,7 +90,6 @@ public class StorageSystem{
 	}
 	
 	public void addFile(String filename, long data, String hash) {
-		System.out.println("ADD FILE HASH: "+hash);
 		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
@@ -103,25 +102,22 @@ public class StorageSystem{
 	    }
 	   
 	   public String lookUp(String filename) {
-		   System.out.println("LU Filename:"+filename);
-			ArrayList<FileInfo> samename = new ArrayList<FileInfo>();
+		   ArrayList<FileInfo> samename = new ArrayList<FileInfo>();
 			String aux = null;
 			FileInfo auxFile = null;
 			
 			for(int i = 0; i < fileinfo.size(); i++) {
 				
 				
-				System.out.println("FILENAME: "+fileinfo.get(i).getFilename()+" FILEID: "+fileinfo.get(i).getFileID());
-				
+			
 			if(fileinfo.get(i).getFilename().equals(filename))
-				//aux = fileinfo.get(i).getFileID();
 				samename.add(fileinfo.get(i));
 				
 			}
 
 			if(samename.size() == 1) {
 			aux = samename.get(0).getFileID();
-			 System.out.println("aux: "+aux);
+			
 			}
 			
 			else {
@@ -166,7 +162,6 @@ public class StorageSystem{
 		
 		
 		public void loadFileInfo() throws IOException {
-			 System.out.println("loadFileInfo");
 			
 			if(Files.exists(Paths.get("/fileInfo/Peer"+peerID+"/"))) {
 			 Files.walk(Paths.get("/fileInfo/Peer"+peerID+"/"))

@@ -22,6 +22,11 @@ public class Message {
 		header.getChunkNo() + " " + header.getReplicationDeg() + " "+ CRLF + CRLF;
 	}	
 	
+	public String messageToStringPrintable() {
+		return header.getMessageType() + " " + header.getVersion() + " " + header.getSenderId() + " " + header.getFileId() + " " + 
+		header.getChunkNo() + " " + header.getReplicationDeg() ;
+	}
+	
 	public byte[] sendable() {
 		return this.messageToString().getBytes();
 	}

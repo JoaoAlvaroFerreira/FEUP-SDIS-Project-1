@@ -60,7 +60,7 @@ public class MessageParser implements Runnable {
 		switch(messageType) {
 		
 		case "PUTCHUNK":
-			System.out.println("AQUI");
+			
 			Chunk chunk = new Chunk(fileID, chunkNo, body);
 			if(peer.getStorage().addChunk(chunk)) {
 
@@ -69,7 +69,7 @@ public class MessageParser implements Runnable {
 			
 			try {
 				peer.getMC().sendMessage(reply);
-				System.out.println(stored.messageToString()+"SAVED CHUNK SIZE: " + body.length);
+				System.out.println(stored.messageToStringPrintable());
 			} catch (UnknownHostException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -117,8 +117,8 @@ public class MessageParser implements Runnable {
 
 				Message sendChunk = new Message("CHUNK",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, chunkSend.getContent());
 				byte[] reply = sendChunk.sendable();
-				//System.out.println(sendChunk.messageToString());
-				System.out.println("CHUNK");
+				System.out.println(sendChunk.messageToStringPrintable());
+				
 				try {
 					peer.getMDR().sendMessage(reply);
 				} catch (UnknownHostException e) {
