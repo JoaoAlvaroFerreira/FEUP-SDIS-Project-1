@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -34,8 +35,10 @@ public class MessageParser implements Runnable {
 		int replicationDeg = Integer.parseInt(msg[5]);
 		String CRLF = "" + (char) 0xD  + (char) 0xA;
 		String rest = msg[6];
-		String bodyString = str.replace(CRLF+CRLF,"");
-		byte[]body = bodyString.getBytes();
+		String bodyString = rest.replace(CRLF+CRLF,"");
+		String newBodyString = bodyString.replaceAll(null, "");
+		byte[] body = newBodyString.getBytes(StandardCharsets.UTF_8);
+		
 		
 		
 		switch(messageType) {

@@ -23,7 +23,7 @@ public class Message {
 	}	
 	
 	public byte[] sendable() {
-		return this.messageToString().getBytes();
+		return this.messageToString().getBytes(StandardCharsets.UTF_8);
 	}
 	
 	public byte[] getBody() 

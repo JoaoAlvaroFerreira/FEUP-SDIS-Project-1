@@ -202,15 +202,18 @@ public class Peer implements RMI {
 
 				
 				
-				/*for(int i = 0; i < 5; i++) {
+				for(int i = 0; i < 5; i++) {
 					
 					TimeUnit.SECONDS.sleep(i);
 					
 					if(replicationCheck(hash)) {
 						break;
 					}
-					mdr.sendMessage(msgByte);
-					}*/
+					else {
+						mdr.sendMessage(msgByte);
+						System.out.println(msg.messageToString());
+					}
+					}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -280,8 +283,8 @@ public class Peer implements RMI {
 					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
 					msgByte = msg.sendable();
 					mdb.sendMessage(msgByte);
-					System.out.println(msg.messageToString()+"SENT CHUNK SIZE: " + chunk.getContent().length);
-					/*
+					System.out.println(msg.messageToString());
+					
 					for(int i = 0; i < 5; i++) {
 						
 					TimeUnit.SECONDS.sleep(i);
@@ -289,9 +292,12 @@ public class Peer implements RMI {
 					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) == rep_degree) {
 						break;
 					} 
-					else mdb.sendMessage(msgByte); 
+					else {
+						mdb.sendMessage(msgByte); 
+						System.out.println(msg.messageToString());
 					}
-					*/
+					}
+					
 				
 				}
 			

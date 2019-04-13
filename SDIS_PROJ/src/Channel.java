@@ -26,6 +26,7 @@ public class Channel extends Thread{
         while (true) {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             this.socket.receive(packet);
+           
             
             new Thread(new MessageParser(packet, peer)).start();
             String received = new String(
