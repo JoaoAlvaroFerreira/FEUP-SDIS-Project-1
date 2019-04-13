@@ -36,8 +36,8 @@ public class MessageParser implements Runnable {
 		String CRLF = "" + (char) 0xD  + (char) 0xA;
 		String rest = msg[6];
 		String bodyString = rest.replace(CRLF+CRLF,"");
-		String newBodyString = bodyString.replaceAll(null, "");
-		byte[] body = newBodyString.getBytes(StandardCharsets.UTF_8);
+		String newBodyString = bodyString.replaceAll("null", "");
+		byte[] body = newBodyString.getBytes();
 		
 		
 		
