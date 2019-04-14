@@ -20,9 +20,11 @@ public class MessageParser implements Runnable {
 
 	public void run() {
 		
-		String str = new String(packet.getData(), StandardCharsets.UTF_8);
+		
+		String str = new String(packet.getData(),0, packet.getLength());
 		String rest = null, fileID = null, messageType = null, version = null;
 		int i = 0, next = 0, chunkNo = 0, replicationDeg = 0, senderID=0;
+		byte[] body = null;
 
 	     if(str.contains(" ")){
 	    	i= str.indexOf(" ");
@@ -58,9 +60,10 @@ public class MessageParser implements Runnable {
 		
 		bodyString = bodyString2.replaceFirst(" ", "");
 
-		byte[] body = bodyString.getBytes( StandardCharsets.UTF_8);
+		body = bodyString.getBytes();
 		
 		
+
 		switch(messageType) {
 		
 		case "PUTCHUNK":
@@ -114,6 +117,13 @@ public class MessageParser implements Runnable {
 				
 			if(chunkSend.getFileID().equals(fileID) && chunkSend.getChunkN()==chunkNo) {
 				
+				
+
+				Message sendChunk = new Message("CHUNK",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, chunkSend.getContent());
+				
+				byte[] reply = sendChunk.sendable();
+				System.out.println(sendChunk.messageToStringPrintable());
+				System.out.println("CHUNK SENT SIZE: " + chunkSend.getContent().length);
 				Random rand = new Random();
 				int  n = rand.nextInt(400) + 1;
 				
@@ -123,10 +133,6 @@ public class MessageParser implements Runnable {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				} 
-
-				Message sendChunk = new Message("CHUNK",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, chunkSend.getContent());
-				byte[] reply = sendChunk.sendable();
-				System.out.println(sendChunk.messageToStringPrintable());
 				
 				try {
 					peer.getMDR().sendMessage(reply);
@@ -144,8 +150,9 @@ public class MessageParser implements Runnable {
 		
 		case "CHUNK": //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 			Chunk gotChunk = new Chunk(fileID, chunkNo, body);
+			System.out.println("CHUNK RECEIVED SIZE: " + body.length);
 			peer.getStorage().addChunk(gotChunk);
-			if(gotChunk.getContent().length < 64000)
+			if(gotChunk.getContent().length < 60000)				
 				peer.lastChunk();
 			break;
 			
@@ -163,7 +170,8 @@ public class MessageParser implements Runnable {
             break;
             
 		case "DELETE":
-            //peer.getStorage().getFileInfo().remove(new FileInfo(fileID, peer.getFileInfo.getDateModified(), FileInfo.getFilename(), peer.getPeerID()));
+            peer.getStorage().deleteChunkByFileID(fileID);
+            peer.deleteFileFolder(fileID);
             break;
 		}
 	}

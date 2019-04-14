@@ -135,6 +135,12 @@ public class Peer implements RMI {
 		{
 			initiateReclaim(space);
 		}
+		
+		else if(operation == "STATE")
+		{
+			initiateState(file_path);
+		}
+
 
 
 	}
@@ -144,6 +150,12 @@ public class Peer implements RMI {
 
 
 	 
+private void initiateState(String file_path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
 private void initiateReclaim(double space) {
            
              
@@ -166,7 +178,7 @@ private void initiateReclaim(double space) {
  
                         File file = new File(newfilename);
                         file.delete();
-                        storage.deleteChunk(chunk);
+                       // storage.deleteChunk(chunk);
                        
                     }
                 }
@@ -200,14 +212,15 @@ private void initiateReclaim(double space) {
 	}
 
 
-	private void initiateRestore(String file_path) throws IOException { //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+private void initiateRestore(String file_path) throws IOException { //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 		
 		String hash = storage.lookUp(file_path);
 		int chunkn = 0;
 		byte[] msgByte = null;
 		Message msg;
 			///getChunksFromFile(hash);
-		while(!this.lastChunk) {
+		boolean lastChunkAux = this.lastChunk;
+		while(!lastChunkAux) {
 			
 			chunkn++;
 			
@@ -226,7 +239,7 @@ private void initiateReclaim(double space) {
 				e.printStackTrace();
 			}
 			
-			
+			lastChunkAux = this.lastChunk;
 		}
 		
 		String newfilename = "Peer"+this.getPeerID() + "/restore/"+file_path;
@@ -267,7 +280,6 @@ private void initiateReclaim(double space) {
 		File file = new File(file_path);
 		String fileID = generateFileID(file);
 		byte[] msgByte = null;
-		Message msg;
 		boolean stored = false;
 	
 		try {
@@ -276,19 +288,20 @@ private void initiateReclaim(double space) {
 			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 64000);
 			
 		
-				for(Chunk chunk : chunks) {
+				for(int i = 0; i < chunks.size(); i++) {
 					
-					System.out.println("CHUNK N: "+ chunk.getChunkN()+ " SIZE: " + chunk.getContent().length);
-					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
+					System.out.println("CHUNK N: "+ chunks.get(i).getChunkN()+ " SIZE: " + chunks.get(i).getContent().length);
+					Message msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunks.get(i).getFileID(),chunks.get(i).getChunkN(), rep_degree,
+							chunks.get(i).getContent());
 					msgByte = msg.sendable();
 					System.out.println(msg.messageToStringPrintable());
 					mdb.sendMessage(msgByte);					
 					
-					for(int i = 0; i < 5 && !stored; i++) {
+					for(int j = 0; j < 5 && !stored; j++) {
 						
-					TimeUnit.SECONDS.sleep(i);
+					TimeUnit.SECONDS.sleep(1+j);
 					
-					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) >= rep_degree) {
+					if(storedCheck(chunks.get(i).getChunkN(), chunks.get(i).getFileID()) >= rep_degree) {
 						stored = true;
 					} 
 					else {
@@ -344,6 +357,21 @@ private void initiateReclaim(double space) {
 
 
 
+	public void deleteFileFolder(String hash) {
+		 String foldername = "Peer"+this.getPeerID() + "/backup/"+hash;
+		 File folder = new File(foldername);
+		 
+		 if (!folder.exists()) {
+			 String[]entries = folder.list();
+			 for(String s: entries){
+			     File currentFile = new File(folder.getPath(),s);
+			     currentFile.delete();
+			 }
+			 
+			    folder.delete();
+			    
+			}
+	}
 
 	public void saveChunks() throws IOException{
 		
@@ -464,7 +492,7 @@ private void initiateReclaim(double space) {
 	        
 	        temporary = new byte[chunk_size]; //Temporary Byte Array
 	        int bytesRead = inStream.read(temporary, 0, chunk_size);
-	        String temp = new String(temporary, StandardCharsets.UTF_8);
+	        
 	    
 	        if ( bytesRead > 0) // If bytes read is not empty
 	        {

@@ -85,6 +85,19 @@ public class TestApp {
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
             }
             
+            else if(sub_protocol.equals("STATE"))
+            {
+            	if(args.length != 3) {
+            		System.out.println("Invalid arguments for Delete protocol");
+            		System.out.println("TestApp DELETE <file_path> ");
+            		return;
+            	}
+            	
+                file_path = args[2];
+                
+                stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
+            }
+            
             
                  
            } catch (Exception e) {

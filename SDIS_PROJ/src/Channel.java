@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
-public class Channel extends Thread{
+public class Channel implements Runnable{
 
 	protected MulticastSocket socket = null;
     protected byte[] buf = new byte[64000];

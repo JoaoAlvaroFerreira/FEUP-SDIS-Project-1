@@ -26,8 +26,8 @@ public class FileInfo implements Serializable {
 		this.fileID = fileID;
 	}
 
-	public long getDateModified() {
-		return dateModified;
+	public int getDateModified() {
+		return (int) dateModified;
 	}
 
 	public void setDateModified(long dateModified) {
@@ -47,6 +47,7 @@ public class FileInfo implements Serializable {
 	}
 	
 
-	
+
+    
 	
 }

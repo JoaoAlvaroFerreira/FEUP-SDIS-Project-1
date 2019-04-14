@@ -7,6 +7,8 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+
 
 public class StorageSystem{
 
@@ -26,7 +28,10 @@ public class StorageSystem{
 	public long getSpace_available() {
 		return space_available;
 	}
-
+	
+	public void updateStorage() {
+		space_available = storage_capacity - used_storage;
+	}
 	private ArrayList<Chunk> chunks;
 	private ArrayList<FileInfo> fileinfo;
 	private ArrayList<BackUpInfo> backupinfo;
@@ -47,17 +52,32 @@ public class StorageSystem{
 	
 	}
 	
-	public boolean deleteChunk(Chunk c) {
-		 
-        if(isStored(c)) {
+	public int[] getChunkInfo(){
+		int[] a = new int[2]; 
+		
+		
+		
+		return a;
+	}
+	
+	public boolean deleteChunkByFileID(String fileID) {
+		 boolean found = false;
+        for(Chunk chunk: chunks) {
+        	if(chunk.getFileID().equals(fileID)) {
+        		chunks.remove(chunk);
+        		found = true;
+        		 used_storage= used_storage - chunk.getsize();
+        		 updateStorage();
+
+        	}
  
-            this.chunks.remove(c);
-            used_storage= used_storage - c.getsize();
-            return true;       
+            
+                 
  
         }
-        System.out.println("Chunk doesn't exist");
-        return false;
+        if(!found)
+        System.out.println("File isn't saved in this peer");
+        return found;
  
     }
  
@@ -68,6 +88,7 @@ public class StorageSystem{
 		
 				if(!isStored(c)) {
 					chunks.add(c);
+					updateStorage();
 					return true;
 				}
 		
@@ -105,42 +126,29 @@ public class StorageSystem{
 	
 
 	   
-	   public boolean moreRecent(FileInfo a, FileInfo b) {
-	        if (a.getDateModified() > b.getDateModified())
-	            return true; // highest value first
-	        else  return false;
-	    }
+	
+    public boolean compare(FileInfo e1, FileInfo e2) {
+        return (e1.getDateModified() - e2.getDateModified()>0);
+    }
 	   
 	   public String lookUp(String filename) {
 		   ArrayList<FileInfo> samename = new ArrayList<FileInfo>();
 			String aux = null;
-			FileInfo auxFile = null;
+			
 			
 			for(int i = 0; i < getFileInfo().size(); i++) {
 				
-				
-			
 			if(getFileInfo().get(i).getFilename().equals(filename))
 				samename.add(getFileInfo().get(i));
 				
 			}
 
-			if(samename.size() == 1) {
-			aux = samename.get(0).getFileID();
-			
-			}
-			
-			else {
-				for(int j = 0; j < samename.size(); j++) {
-					if(moreRecent(samename.get(j), auxFile)){
-						auxFile = samename.get(j);
-						aux = samename.get(j).getFileID();
-						}
-						}
-					}
+			Collections.sort(samename,(a,b)->a.getDateModified() - b.getDateModified());
 			
 			
-			return aux;
+			
+			
+			return samename.get(0).getFileID();
 	   }
 	   
 	   
