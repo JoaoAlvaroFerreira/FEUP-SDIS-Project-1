@@ -138,7 +138,7 @@ public class Peer implements RMI {
 			}
 		
 		}
-		else if(operation == "RECLAIM")
+		else if(operation.equals("RECLAIM"))
 		{
 			initiateReclaim(space);
 		}
@@ -165,11 +165,13 @@ private void initiateState(String file_path) {
 
 private void initiateReclaim(double space) {
            
-             
+            ArrayList<Chunk> chunks = storage.getChunks();            
+            if(chunks.size()==0) {            	
+            }else {
                
-                for(int i = 0 ; i < storage.getChunks().size();i++) {
+                for(int i = 0 ; i < chunks.size();i++) {
                     if(space > 0) {
-                        Chunk chunk = storage.getChunks().get(i);
+                        Chunk chunk = chunks.get(i);
                         space -= chunk.getsize();
                        
                         Message msg = new Message("REMOVED", getVersion(), this.getPeerID(), chunk.getFileID(), chunk.getChunkN(), 0 , null);
@@ -181,14 +183,11 @@ private void initiateReclaim(double space) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
                         }  
-                        String newfilename = "Peer"+this.getPeerID() + "/"+ chunk.getFileID()+ "/chk" + chunk.getChunkN();
- 
-                        File file = new File(newfilename);
-                        file.delete();
-                       // storage.deleteChunk(chunk);
+                       storage.deleteChunkByFileID(chunk.getFileID());
                        
                     }
                 }
+            }
        
     }
 

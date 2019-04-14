@@ -170,7 +170,7 @@ public class MessageParser implements Runnable {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} 
-            peer.getStorage().getBackUps().remove(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
+			peer.getStorage().getChunks().remove(new Chunk(fileID, chunkNo, Chunk.getContent()));
             break;
             
 		case "DELETE":

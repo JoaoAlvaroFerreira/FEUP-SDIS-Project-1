@@ -1,7 +1,7 @@
 public class Chunk{
 	private String chunkID;
 	private String fileID;
-	private byte[] content;
+	private static byte[] content;
 	private int chunkN;
 	private int size; 
 	
@@ -31,8 +31,8 @@ public class Chunk{
 			return this.fileID;
 		}
 		
-		public byte[] getContent() {
-			return this.content;
+		public static byte[] getContent() {
+			return content;
 		}
 		
 		public int getsize() {
