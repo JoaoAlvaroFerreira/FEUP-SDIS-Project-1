@@ -142,10 +142,36 @@ public class Peer implements RMI {
 
 
 
-	private void initiateReclaim(double space) {
-		// TODO Auto-generated method stub
-		
-	}
+
+	 
+private void initiateReclaim(double space) {
+           
+             
+               
+                for(int i = 0 ; i < storage.getChunks().size();i++) {
+                    if(space > 0) {
+                        Chunk chunk = storage.getChunks().get(i);
+                        space -= chunk.getsize();
+                       
+                        Message msg = new Message("REMOVED", getVersion(), this.getPeerID(), chunk.getFileID(), chunk.getChunkN(), 0 , null);
+                        byte[] msgByte = msg.sendable();
+                       
+                        try {
+                            mc.sendMessage(msgByte);
+                        } catch (UnknownHostException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }  
+                        String newfilename = "Peer"+this.getPeerID() + "/"+ chunk.getFileID()+ "/chk" + chunk.getChunkN();
+ 
+                        File file = new File(newfilename);
+                        file.delete();
+                        storage.deleteChunk(chunk);
+                       
+                    }
+                }
+       
+    }
 
 
 	private void initiateDelete(String file_path) {
@@ -197,20 +223,22 @@ public class Peer implements RMI {
             file.getParentFile().mkdirs();
             file.createNewFile();
         } 
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(newfilename));
+        
+        FileOutputStream outputStream = new FileOutputStream(newfilename);
+       
+      
        
     	for(int i = 0; i < storage.getChunks().size(); i++) {
     		   if(storage.getChunks().get(i).getFileID().equals(hash)) {
     		
-    		  		    writer.write(new String(storage.getChunks().get(i).getContent(), StandardCharsets.UTF_8));
+    			   outputStream.write(storage.getChunks().get(i).getContent());
     		    
     		}
     	}
           
     	
  
-    	 writer.close();
+    	 outputStream.close();
 		
     	this.lastChunk = false;
 	}
@@ -224,34 +252,35 @@ public class Peer implements RMI {
 		String fileID = generateFileID(file);
 		byte[] msgByte = null;
 		Message msg;
+		boolean stored = false;
 	
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
 			storage.serializeFileInfo();
-			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 64000);
+			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 256);
 			
 		
 				for(Chunk chunk : chunks) {
 					
+					System.out.println("CHUNK N: "+ chunk.getChunkN());
 					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
 					msgByte = msg.sendable();
 					System.out.println(msg.messageToStringPrintable());
-					mdb.sendMessage(msgByte);
-				
+					mdb.sendMessage(msgByte);					
 					
-					/*
-					for(int i = 0; i < 5; i++) {
+					for(int i = 0; i < 5 && !stored; i++) {
 						
 					TimeUnit.SECONDS.sleep(i);
 					
-					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) == rep_degree) {
-						break;
+					if(storedCheck(chunk.getChunkN(), chunk.getFileID()) >= rep_degree) {
+						stored = true;
 					} 
 					else {
 						mdb.sendMessage(msgByte); 
 						System.out.println(msg.messageToStringPrintable());
 					}
-					} */
+					} 
+					stored = false;
 					
 				
 				}
@@ -273,7 +302,6 @@ public class Peer implements RMI {
 			if(chunkN == info.getChunkN() && info.getFileID().equals(fileID))
 				timesSaved++;
 		}
-		
 		return timesSaved;
 	}
 
@@ -442,6 +470,7 @@ public class Peer implements RMI {
 	     }
 	     catch (NullPointerException ex)
 	     {
+	    	 System.out.println("File not found"+ex.toString());
 	      ex.printStackTrace();
 	     }
 	     catch (FileNotFoundException ex)

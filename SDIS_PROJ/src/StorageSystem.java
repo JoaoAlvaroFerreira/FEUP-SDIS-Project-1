@@ -1,15 +1,10 @@
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -51,6 +46,21 @@ public class StorageSystem{
 		}
 	
 	}
+	
+	public boolean deleteChunk(Chunk c) {
+		 
+        if(isStored(c)) {
+ 
+            this.chunks.remove(c);
+            used_storage= used_storage - c.getsize();
+            return true;       
+ 
+        }
+        System.out.println("Chunk doesn't exist");
+        return false;
+ 
+    }
+ 
 	
 	public boolean addChunk(Chunk c) {
 		if(storage_capacity > used_storage + c.getsize()) {

@@ -52,10 +52,12 @@ public class MessageParser implements Runnable {
 	
 		String CRLF = "" + (char) 0xD  + (char) 0xA;
 		
-		String bodyString = rest.replace(CRLF+CRLF,"");	
+		String bodyString = rest.replaceFirst(CRLF+CRLF,"");
+		
+		String bodyString2 = bodyString.replaceAll("\0", "");
 
-		byte[] body = trim(bodyString.getBytes( StandardCharsets.UTF_8));
-	
+		byte[] body = bodyString2.getBytes( StandardCharsets.UTF_8);
+		
 		
 		switch(messageType) {
 		
@@ -68,6 +70,15 @@ public class MessageParser implements Runnable {
 			byte[] reply = stored.sendable();
 			
 			try {
+				
+				Random randomS = null;
+				try {
+					TimeUnit.MILLISECONDS.sleep(400);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				peer.getMC().sendMessage(reply);
 				System.out.println(stored.messageToStringPrintable());
 			} catch (UnknownHostException e) {
@@ -87,13 +98,6 @@ public class MessageParser implements Runnable {
 			
 			
 		case "STORED":
-			Random randomS = null;
-			try {
-				TimeUnit.MILLISECONDS.sleep(400);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			peer.getStorage().getBackUps().add(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
 		
 		
@@ -139,6 +143,16 @@ public class MessageParser implements Runnable {
 			if(gotChunk.getContent().length < 64000)
 				peer.lastChunk();
 			break;
+			
+		case "REMOVED":
+            try {
+                TimeUnit.MILLISECONDS.sleep(400);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            peer.getStorage().getBackUps().remove(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
+            break;
 		}
 	}
 	static byte[] trim(byte[] bytes)
