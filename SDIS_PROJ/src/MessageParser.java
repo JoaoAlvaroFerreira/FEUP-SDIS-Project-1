@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Random;
@@ -21,7 +22,11 @@ public class MessageParser implements Runnable {
 	public void run() {
 		
 		
-		String str = new String(packet.getData(),0, packet.getLength());
+		String str = null;
+
+		str = new String(packet.getData(),0, packet.getLength());
+	
+		
 		String rest = null, fileID = null, messageType = null, version = null;
 		int i = 0, next = 0, chunkNo = 0, replicationDeg = 0, senderID=0;
 		byte[] body = null;
@@ -56,11 +61,11 @@ public class MessageParser implements Runnable {
 		
 		String bodyString = rest.replaceFirst(CRLF+CRLF,"");
 		
-		String bodyString2 = bodyString.replaceAll("\0", "");
+		bodyString = bodyString.replaceFirst(" ", "");
 		
-		bodyString = bodyString2.replaceFirst(" ", "");
-
-		body = bodyString.getBytes();
+			
+			body = bodyString.getBytes();
+	
 		
 		
 
@@ -69,7 +74,6 @@ public class MessageParser implements Runnable {
 		case "PUTCHUNK":
 			
 			Chunk chunk = new Chunk(fileID, chunkNo, body);
-			System.out.println("CHUNK N: "+ chunk.getChunkN()+ " SIZE: " + chunk.getContent().length);
 			if(peer.getStorage().addChunk(chunk)) {
 
 			Message stored = new Message("STORED",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, null);
@@ -123,7 +127,7 @@ public class MessageParser implements Runnable {
 				
 				byte[] reply = sendChunk.sendable();
 				System.out.println(sendChunk.messageToStringPrintable());
-				System.out.println("CHUNK SENT SIZE: " + chunkSend.getContent().length);
+			
 				Random rand = new Random();
 				int  n = rand.nextInt(400) + 1;
 				
@@ -150,9 +154,9 @@ public class MessageParser implements Runnable {
 		
 		case "CHUNK": //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 			Chunk gotChunk = new Chunk(fileID, chunkNo, body);
-			System.out.println("CHUNK RECEIVED SIZE: " + body.length);
+			
 			peer.getStorage().addChunk(gotChunk);
-			if(gotChunk.getContent().length == 0)				
+			if(gotChunk.getContent().length < 55000)				
 				peer.lastChunk();
 			break;
 			

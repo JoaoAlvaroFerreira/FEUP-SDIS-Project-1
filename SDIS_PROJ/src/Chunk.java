@@ -4,8 +4,6 @@ public class Chunk{
 	private byte[] content;
 	private int chunkN;
 	private int size; 
-
-	public static int chunkMaxSize = 64000;
 	
 
 

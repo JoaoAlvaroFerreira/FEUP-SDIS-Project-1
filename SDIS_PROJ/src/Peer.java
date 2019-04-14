@@ -1,6 +1,8 @@
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,7 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,6 +25,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 
@@ -208,7 +215,7 @@ private void initiateReclaim(double space) {
 
 	public void lastChunk() {
 		this.lastChunk = true;
-		System.out.println("LAST CHUNK");
+		
 	}
 
 
@@ -285,15 +292,15 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
 			storage.serializeFileInfo();
-			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 64000);
+			ArrayList<Chunk> chunks = splitIntoChunks(file, fileID, 64000);
 			
 		
 				for(int i = 0; i < chunks.size(); i++) {
 					
-					System.out.println("CHUNK N: "+ chunks.get(i).getChunkN()+ " SIZE: " + chunks.get(i).getContent().length);
 					Message msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunks.get(i).getFileID(),chunks.get(i).getChunkN(), rep_degree,
 							chunks.get(i).getContent());
 					msgByte = msg.sendable();
+		
 					System.out.println(msg.messageToStringPrintable());
 					mdb.sendMessage(msgByte);					
 					
@@ -359,9 +366,10 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 
 	public void deleteFileFolder(String hash) {
 		 String foldername = "Peer"+this.getPeerID() + "/backup/"+hash;
+		 System.out.println("FOLDERNAME"+foldername);
 		 File folder = new File(foldername);
 		 
-		 if (!folder.exists()) {
+		 if (folder.exists()) {
 			 String[]entries = folder.list();
 			 for(String s: entries){
 			     File currentFile = new File(folder.getPath(),s);
@@ -397,7 +405,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 	 public static String sha256hashing(String base) {
 	        try{
 	            MessageDigest md = MessageDigest.getInstance("SHA-256");
-	            byte[] hashed = md.digest(base.getBytes("UTF-8"));
+	            byte[] hashed = md.digest(base.getBytes("UTF8"));
 	            StringBuffer hexString = new StringBuffer();
 
 	            for (int i = 0; i < hashed.length; i++) {
@@ -459,7 +467,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 			return storage;
 		}
 
-		public ArrayList<Chunk> splitIntoChunksExternal(File file, String fileID, int chunk_size) throws IOException
+		public ArrayList<Chunk> splitIntoChunks(File file, String fileID, int chunk_size) throws IOException
 	    {
 			ArrayList<Chunk> filechunks = new ArrayList<Chunk>();
 		 
@@ -492,7 +500,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 	        
 	        temporary = new byte[chunk_size]; //Temporary Byte Array
 	        int bytesRead = inStream.read(temporary, 0, chunk_size);
-	        
+	      
 	    
 	        if ( bytesRead > 0) // If bytes read is not empty
 	        {
@@ -529,5 +537,6 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 	     
 	     return filechunks;
 	    }
+		
 		
 }

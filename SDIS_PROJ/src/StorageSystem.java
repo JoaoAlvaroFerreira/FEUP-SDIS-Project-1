@@ -62,12 +62,13 @@ public class StorageSystem{
 	
 	public boolean deleteChunkByFileID(String fileID) {
 		 boolean found = false;
+		 ArrayList<Chunk> aux = new ArrayList<Chunk>();
         for(Chunk chunk: chunks) {
         	if(chunk.getFileID().equals(fileID)) {
-        		chunks.remove(chunk);
+        		aux.add(chunk);
         		found = true;
         		 used_storage= used_storage - chunk.getsize();
-        		 updateStorage();
+        		 
 
         	}
  
@@ -75,6 +76,9 @@ public class StorageSystem{
                  
  
         }
+        
+        chunks.removeAll(aux);
+        updateStorage();
         if(!found)
         System.out.println("File isn't saved in this peer");
         return found;
