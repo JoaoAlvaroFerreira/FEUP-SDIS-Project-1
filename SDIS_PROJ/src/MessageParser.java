@@ -161,6 +161,10 @@ public class MessageParser implements Runnable {
 			} 
             peer.getStorage().getBackUps().remove(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
             break;
+            
+		case "DELETE":
+            //peer.getStorage().getFileInfo().remove(new FileInfo(fileID, peer.getFileInfo.getDateModified(), FileInfo.getFilename(), peer.getPeerID()));
+            break;
 		}
 	}
 	static byte[] trim(byte[] bytes)

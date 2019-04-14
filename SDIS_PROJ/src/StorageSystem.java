@@ -35,7 +35,7 @@ public class StorageSystem{
 		this.peerID = peerID;
 		used_storage = 0;
 		chunks = new ArrayList<Chunk>();
-		fileinfo = new ArrayList<FileInfo>();
+		setFileInfo(new ArrayList<FileInfo>());
 		backupinfo = new ArrayList<BackUpInfo>();
 		
 		try {
@@ -100,7 +100,7 @@ public class StorageSystem{
 	}
 	
 	public void addFile(String filename, long data, String hash) {
-		fileinfo.add(new FileInfo(hash, data, filename, this.peerID));
+		getFileInfo().add(new FileInfo(hash, data, filename, this.peerID));
 	}
 	
 
@@ -116,12 +116,12 @@ public class StorageSystem{
 			String aux = null;
 			FileInfo auxFile = null;
 			
-			for(int i = 0; i < fileinfo.size(); i++) {
+			for(int i = 0; i < getFileInfo().size(); i++) {
 				
 				
 			
-			if(fileinfo.get(i).getFilename().equals(filename))
-				samename.add(fileinfo.get(i));
+			if(getFileInfo().get(i).getFilename().equals(filename))
+				samename.add(getFileInfo().get(i));
 				
 			}
 
@@ -147,18 +147,18 @@ public class StorageSystem{
 		//"/fileInfo/Peer"+peerID+"/"+fileID
 		public void serializeFileInfo() {
 			
-			for(int i = 0; i < this.fileinfo.size(); i++ ) {
+			for(int i = 0; i < this.getFileInfo().size(); i++ ) {
 				
 			try{
 				
-				File file = new File("fileInfo/Peer"+peerID+"/"+this.fileinfo.get(i).getFileID()+".ser");
+				File file = new File("fileInfo/Peer"+peerID+"/"+this.getFileInfo().get(i).getFileID()+".ser");
 				
 			    if (!file.exists()) {
 		             file.getParentFile().mkdirs();
 		             file.createNewFile();
 		         }
 			    ObjectOutputStream objoutput = new ObjectOutputStream(new FileOutputStream(file.getPath()));
-				objoutput.writeObject(this.fileinfo.get(i));
+				objoutput.writeObject(this.getFileInfo().get(i));
 				
 				objoutput.close();
 			}  catch (IOException e) {
@@ -182,7 +182,7 @@ public class StorageSystem{
 						
 						if(obj instanceof FileInfo) {
 							FileInfo fileinforetrieved = (FileInfo) obj;
-							this.fileinfo.add(fileinforetrieved);
+							this.getFileInfo().add(fileinforetrieved);
 						}
 					}  catch (ClassNotFoundException e) {
 						// TODO Auto-generated catch block
@@ -196,6 +196,14 @@ public class StorageSystem{
 			 
 			 
 			
+		}
+
+		public ArrayList<FileInfo> getFileInfo() {
+			return fileinfo;
+		}
+
+		public void setFileInfo(ArrayList<FileInfo> fileinfo) {
+			this.fileinfo = fileinfo;
 		}
 	  
 }

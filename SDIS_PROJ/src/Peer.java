@@ -175,9 +175,25 @@ private void initiateReclaim(double space) {
 
 
 	private void initiateDelete(String file_path) {
-		
-		
+    String hash = storage.lookUp(file_path);
+    byte[] msgByte = null;
+    Message msg;
+    msg = new Message("DELETE", getVersion(), this.getPeerID(),hash, 0, 0, null);
+    msgByte = msg.sendable();
+    System.out.println(msg.messageToStringPrintable());
+    try {
+        mdr.sendMessage(msgByte);
+
+
+        TimeUnit.SECONDS.sleep(1);
+
+    } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+
 	}
+
 	public void lastChunk() {
 		this.lastChunk = true;
 		System.out.println("LAST CHUNK");
