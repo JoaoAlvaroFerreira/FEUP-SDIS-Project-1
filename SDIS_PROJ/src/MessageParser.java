@@ -152,7 +152,7 @@ public class MessageParser implements Runnable {
 			Chunk gotChunk = new Chunk(fileID, chunkNo, body);
 			System.out.println("CHUNK RECEIVED SIZE: " + body.length);
 			peer.getStorage().addChunk(gotChunk);
-			if(gotChunk.getContent().length < 60000)				
+			if(gotChunk.getContent().length == 0)				
 				peer.lastChunk();
 			break;
 			
