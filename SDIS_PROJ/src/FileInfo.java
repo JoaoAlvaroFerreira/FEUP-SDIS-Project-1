@@ -10,12 +10,14 @@ public class FileInfo implements Serializable {
 	private long dateModified;
 	private String filename;
 	private int peerID;
+	private int DesiredRepDeg;
 	
-	public FileInfo(String id, long date, String name, int peerID) {
+	public FileInfo(String id, long date, String name, int peerID, int repdeg) {
 		this.setFileID(id);
 		this.setDateModified(date);
 		this.setFilename(name);
 		this.peerID = peerID;
+		this.setDesiredRepDeg(repdeg);
 	}
 
 	public String getFileID() {
@@ -44,6 +46,14 @@ public class FileInfo implements Serializable {
 	
 	public int getPeerID() {
 		return this.peerID;
+	}
+
+	public int getDesiredRepDeg() {
+		return DesiredRepDeg;
+	}
+
+	public void setDesiredRepDeg(int desiredRepDeg) {
+		DesiredRepDeg = desiredRepDeg;
 	}
 	
 

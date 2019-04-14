@@ -52,11 +52,18 @@ public class StorageSystem{
 	
 	}
 	
+	public void increaseChunkRepDeg(String fileID, int chunkn) {
+		
+	 for(Chunk chunk: chunks) {
+    	if(chunk.getFileID().equals(fileID) && chunk.getChunkN()==chunkn) 
+    		chunk.increaseRepDeg();
+ 
+     	}
+	}
+	
+	
 	public int[] getChunkInfo(){
-		int[] a = new int[2]; 
-		
-		
-		
+		int[] a = new int[2];		
 		return a;
 	}
 	
@@ -84,6 +91,31 @@ public class StorageSystem{
         return found;
  
     }
+	
+	public boolean deleteChunkByFileIDAndChunkN(String fileID, int chunkN) {
+		 boolean found = false;
+		 ArrayList<Chunk> aux = new ArrayList<Chunk>();
+       for(Chunk chunk: chunks) {
+       	if(chunk.getFileID().equals(fileID) && chunk.getChunkN()==chunkN) {
+       		aux.add(chunk);
+       		found = true;
+       		 used_storage= used_storage - chunk.getsize();
+       		 
+
+       	}
+
+           
+                
+
+       }
+       
+       chunks.removeAll(aux);
+       updateStorage();
+       if(!found)
+       System.out.println("File isn't saved in this peer");
+       return found;
+
+   }
  
 	
 	public boolean addChunk(Chunk c) {
@@ -124,8 +156,8 @@ public class StorageSystem{
 		return isEqualChunk;
 	}
 	
-	public void addFile(String filename, long data, String hash) {
-		getFileInfo().add(new FileInfo(hash, data, filename, this.peerID));
+	public void addFile(String filename, long data, String hash, int repdeg) {
+		getFileInfo().add(new FileInfo(hash, data, filename, this.peerID, repdeg));
 	}
 	
 
@@ -182,6 +214,17 @@ public class StorageSystem{
 			
 		}
 		
+	
+		
+		int perceivedRepDeg(String fileID, int ChunkN) {
+			int repdeg = 0;
+			for(BackUpInfo chunk: backupinfo) {
+				if(chunk.getChunkN() == ChunkN && chunk.getFileID().equals(fileID))
+					repdeg++;
+			}
+			return repdeg;
+		}
+		
 		
 		public void loadFileInfo() throws IOException {
 			
@@ -216,6 +259,20 @@ public class StorageSystem{
 
 		public void setFileInfo(ArrayList<FileInfo> fileinfo) {
 			this.fileinfo = fileinfo;
+		}
+
+		public boolean lowerRepDeg(String fileID, int chunkNo) {
+			
+			for(Chunk chunk: chunks) {
+				if(chunk.getFileID().equals(fileID) && chunk.getChunkN() == chunkNo)
+				{
+					chunk.decreaseRepDeg();
+					if(chunk.getGoalRepDeg() > chunk.getRepDeg()) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
 	  
 }

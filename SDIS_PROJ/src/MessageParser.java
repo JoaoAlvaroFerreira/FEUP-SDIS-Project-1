@@ -74,6 +74,7 @@ public class MessageParser implements Runnable {
 		case "PUTCHUNK":
 			
 			Chunk chunk = new Chunk(fileID, chunkNo, body);
+			chunk.setGoalRepDeg(replicationDeg);
 			if(peer.getStorage().addChunk(chunk)) {
 
 			Message stored = new Message("STORED",peer.getVersion(),peer.getPeerID(),fileID, chunkNo, 0, null);
@@ -111,11 +112,22 @@ public class MessageParser implements Runnable {
 			
 		case "STORED":
 			peer.getStorage().getBackUps().add(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
+			peer.getStorage().increaseChunkRepDeg(fileID, chunkNo);
 		
 		
 		break;
 		
 		case "GETCHUNK": //CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
+			
+			Random rand = new Random();
+			int  n = rand.nextInt(400) + 1;
+			
+			
+			try {
+				Thread.sleep(n);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
 			
 			for(Chunk chunkSend: peer.getStorage().getChunks()) {
 				
@@ -128,15 +140,6 @@ public class MessageParser implements Runnable {
 				byte[] reply = sendChunk.sendable();
 				System.out.println(sendChunk.messageToStringPrintable());
 			
-				Random rand = new Random();
-				int  n = rand.nextInt(400) + 1;
-				
-				
-				try {
-					Thread.sleep(n);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} 
 				
 				try {
 					peer.getMDR().sendMessage(reply);
@@ -156,21 +159,68 @@ public class MessageParser implements Runnable {
 			Chunk gotChunk = new Chunk(fileID, chunkNo, body);
 			
 			peer.getStorage().addChunk(gotChunk);
-			if(gotChunk.getContent().length < 55000)				
+			if(gotChunk.getContent().length < 58000)				
 				peer.lastChunk();
 			break;
 			
 		case "REMOVED":
-			Random rand = new Random();
-			int  n = rand.nextInt(400) + 1;
+			if(peer.getStorage().lowerRepDeg(fileID, chunkNo)) {
+			Random rand2 = new Random();
+			int  n2 = rand2.nextInt(400) + 1;
 			
 			
 			try {
-				Thread.sleep(n);
+				Thread.sleep(n2);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} 
-            peer.getStorage().getBackUps().remove(new BackUpInfo(fileID, chunkNo, peer.getPeerID()));
+			for(Chunk chunkSend: peer.getStorage().getChunks())
+			{
+				if(chunkSend.getFileID().equals(fileID) && chunkSend.getChunkN() == chunkNo)
+				{
+					boolean stored = false;
+					
+					Message msg = new Message("PUTCHUNK", version, peer.getPeerID(),chunkSend.getFileID(),chunkNo, chunkSend.getGoalRepDeg()-chunkSend.getRepDeg(),
+							chunkSend.getContent());
+					byte[] msgByte = msg.sendable();
+		
+					System.out.println(msg.messageToStringPrintable());
+					try {
+						peer.getMDB().sendMessage(msgByte);
+					} catch (UnknownHostException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}					
+					
+					for(int j = 0; j < 5 && !stored; j++) {
+						
+					try {
+						TimeUnit.SECONDS.sleep(1+j);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+					if(peer.storedCheck(chunkNo, fileID) >= chunkSend.getGoalRepDeg()) {
+						stored = true;
+					} 
+					else {
+						try {
+							peer.getMDB().sendMessage(msgByte);
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} 
+						System.out.println(msg.messageToStringPrintable());
+						
+					}
+					} 
+					stored = false;
+				}
+				
+			}
+			}
+		
             break;
             
 		case "DELETE":

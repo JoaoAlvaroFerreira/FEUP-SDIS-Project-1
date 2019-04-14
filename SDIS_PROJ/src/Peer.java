@@ -104,6 +104,7 @@ public class Peer implements RMI {
 	}
 	
 	
+	
 	public void operation(String operation, String file_path, int rep_degree, double space) { //operator is space for reclaim, rep_degree for back up
 
 		
@@ -138,15 +139,13 @@ public class Peer implements RMI {
 			}
 		
 		}
-		else if(operation == "RECLAIM")
-		{
-			initiateReclaim(space);
+		else if(operation.equals("RECLAIM"))
+		{			
+			initiateReclaim(space);			
 		}
-		
-		else if(operation == "STATE")
-		{
-			initiateState(file_path);
-		}
+		else if(operation.equals("STATE"))
+			System.out.print(state());
+	
 
 
 
@@ -156,39 +155,49 @@ public class Peer implements RMI {
 
 
 
-	 
-private void initiateState(String file_path) {
-		// TODO Auto-generated method stub
-		
-	}
-
-
 private void initiateReclaim(double space) {
-           
-             
-               
-                for(int i = 0 ; i < storage.getChunks().size();i++) {
-                    if(space > 0) {
-                        Chunk chunk = storage.getChunks().get(i);
-                        space -= chunk.getsize();
+                      long before = storage.getUsed_storage();
+	while(space < storage.getUsed_storage()) {
+	
+		//int size = storage.getChunks().get(0).getsize();
+		String fileID = storage.getChunks().get(0).getFileID();
+		int chunkN = storage.getChunks().get(0).getChunkN();
+		
+		storage.deleteChunkByFileIDAndChunkN(fileID, chunkN);
+		
                        
-                        Message msg = new Message("REMOVED", getVersion(), this.getPeerID(), chunk.getFileID(), chunk.getChunkN(), 0 , null);
-                        byte[] msgByte = msg.sendable();
-                       
-                        try {
-                            mc.sendMessage(msgByte);
-                        } catch (UnknownHostException e) {
-                            // TODO Auto-generated catch block
+        Message msg = new Message("REMOVED", getVersion(), this.getPeerID(),fileID, chunkN, 0 , null);
+        byte[] msgByte = msg.sendable();
+       
+        try {
+            mc.sendMessage(msgByte);
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
                             e.printStackTrace();
                         }  
-                        String newfilename = "Peer"+this.getPeerID() + "/"+ chunk.getFileID()+ "/chk" + chunk.getChunkN();
+                     
  
-                        File file = new File(newfilename);
-                        file.delete();
-                       // storage.deleteChunk(chunk);
-                       
-                    }
-                }
+       String filename = "Peer"+this.getPeerID()+ "/"+ fileID + "/chk" + chunkN;
+	
+	 File folder = new File(filename);
+	 
+	 if (folder.exists()) {
+		 String[]entries = folder.list();
+		 for(String s: entries){
+		     File currentFile = new File(folder.getPath(),s);
+		     currentFile.delete();
+		 }
+		 
+		    folder.delete();
+		    
+		}
+	}
+                    
+	long reclaimed = before-storage.getUsed_storage();
+	 System.out.println("RECLAIMED " +reclaimed+"B of data.");
+                
+                
+	
        
     }
 
@@ -217,7 +226,6 @@ private void initiateReclaim(double space) {
 		this.lastChunk = true;
 		
 	}
-
 
 private void initiateRestore(String file_path) throws IOException { //GETCHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 		
@@ -280,6 +288,29 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 	}
 
 
+public String state() {
+	String s = "";
+	  s += "\n PEER "+this.getPeerID()+" HAS INITIATED PROTOCOL BACK UP ON THE FOLLOWING FILES: \n";
+    for(FileInfo file: storage.getFileInfo()) {
+    	s+="File Pathname: "+file.getFilename()+"\n";
+    	s+="File ID: "+file.getFileID()+"\n";
+    	s+="Desired Replication Degree: "+file.getDesiredRepDeg()+"\n ";
+    	s+="Initiated Chunks: \n";
+    	for(BackUpInfo chunk: storage.getBackUps()) {
+    		s+= "Chunk ID: "+ chunk.getFileID() + "chunk" + chunk.getChunkN()+"\n";
+    		s+="Perceived Replication Degree: "+ storage.perceivedRepDeg(chunk.getFileID(), chunk.getChunkN())+"\n";
+    	}
+    s+="\n PEER "+this.getPeerID()+" IS STORING THE FOLLOWING CHUNKS: \n";
+    	for(Chunk storedchunk: storage.getChunks()) {
+    		s+="Chunk ID: "+ storedchunk.getChunkId()+"\n";
+    		s+="Size: "+storedchunk.getsize()+"\n";
+     		s+="Perceived Replication Degree: "+storedchunk.getRepDeg()+"\n";
+    	}
+  	s+="PEER STORAGE CAPACITY: " + storage.getSpace_available()+"\n";
+    	
+    }
+    return s;
+}
 
 
 	private void initiateBackup(String file_path, int rep_degree) throws InterruptedException {
@@ -290,7 +321,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 		boolean stored = false;
 	
 		try {
-			storage.addFile(file_path, file.lastModified(), fileID);
+			storage.addFile(file_path, file.lastModified(), fileID, rep_degree);
 			storage.serializeFileInfo();
 			ArrayList<Chunk> chunks = splitIntoChunks(file, fileID, 64000);
 			
@@ -332,7 +363,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 		
 }
 	
-	private int storedCheck(int chunkN, String fileID) {
+	public int storedCheck(int chunkN, String fileID) {
 		int timesSaved = 0;
 		
 		for(BackUpInfo info : storage.getBackUps()) {
@@ -366,7 +397,7 @@ private void initiateRestore(String file_path) throws IOException { //GETCHUNK <
 
 	public void deleteFileFolder(String hash) {
 		 String foldername = "Peer"+this.getPeerID() + "/backup/"+hash;
-		 System.out.println("FOLDERNAME"+foldername);
+		 
 		 File folder = new File(foldername);
 		 
 		 if (folder.exists()) {

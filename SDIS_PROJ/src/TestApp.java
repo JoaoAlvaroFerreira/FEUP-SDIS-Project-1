@@ -1,4 +1,5 @@
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -40,11 +41,18 @@ public class TestApp {
             
             	if(args.length != 4) {
             		System.out.println("Invalid arguments for Backup protocol");
-            		System.out.println("TestApp BACKUP <file_path> <replication_degree>");
+            		System.out.println("java TestApp <peer_ap> BACKUP <file_path> <replication_degree>");
             		return;
             	}
             	ReplicationDeg = Integer.parseInt(args[3]);
                 file_path = args[2];
+                
+                File f = new File(file_path);
+                if(!f.exists()) { 
+                    System.out.println("ERROR: File path specified doesn't lead to a file.");
+                    
+                    return;
+                }
                 
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
             }
@@ -52,7 +60,7 @@ public class TestApp {
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for Restore protocol");
-            		System.out.println("TestApp RESTORE  <file_path>");
+            		System.out.println("java TestApp <peer_ap> RESTORE <file_path>");
             		return;
             	}
             	
@@ -64,11 +72,16 @@ public class TestApp {
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for Delete protocol");
-            		System.out.println("TestApp DELETE <file_path> ");
+            		System.out.println("java TestApp <peer_ap> DELETE <file_path> ");
             		return;
             	}
             	
+            	
+            	
                 file_path = args[2];
+                
+              
+                
                 
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
             }
@@ -76,7 +89,7 @@ public class TestApp {
             {
             	if(args.length != 3) {
             		System.out.println("Invalid arguments for Reclaim protocol");
-            		System.out.println("TestApp RECLAIM <space>");
+            		System.out.println("java TestApp <peer_ap> RECLAIM <space>");
             		return;
             	}
             	
@@ -87,15 +100,14 @@ public class TestApp {
             
             else if(sub_protocol.equals("STATE"))
             {
-            	if(args.length != 3) {
-            		System.out.println("Invalid arguments for Delete protocol");
-            		System.out.println("TestApp DELETE <file_path> ");
+            	if(args.length != 2) {
+            		System.out.println("Invalid arguments for State protocol");
+            		System.out.println("java TestApp <peer_ap> STATE");
             		return;
             	}
-            	
-                file_path = args[2];
-                
+
                 stub.operation(sub_protocol, file_path, ReplicationDeg, disk_space);
+               
             }
             
             
@@ -104,12 +116,10 @@ public class TestApp {
            	System.err.println("TestApp Exception: " + e.toString());
           	    e.printStackTrace();
            }
-        
-        
-        
-
-       
-
+              
+        System.out.println("PROTOCOL EXECUTED");
         
     }
+    
+   
 }

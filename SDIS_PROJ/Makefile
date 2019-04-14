@@ -21,6 +21,7 @@ SERVERCLASSES = \
 	src/BackUpInfo.java \
 	src/FileInfo.java \
 	src/StorageSystem.java \
+	src/RMI.java
 	
 MESSAGECLASSES = \
 	src/Header.java \

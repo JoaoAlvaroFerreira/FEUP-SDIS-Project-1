@@ -4,7 +4,8 @@ public class Chunk{
 	private byte[] content;
 	private int chunkN;
 	private int size; 
-	
+	private int repDeg;
+	private int goalRepDeg;
 
 
 
@@ -15,9 +16,9 @@ public class Chunk{
 			this.content = content;
 			this.size = content.length;
 			this.chunkID=fileID + "chunk" + chunkn;
+			this.repDeg = 1;
 		
 		}
-
 		
 		public String getChunkId() {
 			return this.chunkID;
@@ -38,6 +39,28 @@ public class Chunk{
 		public int getsize() {
 			return this.size;
 		}
+
+		public int getRepDeg() {
+			return repDeg;
+		}
+
+		public void setRepDeg(int repDeg) {
+			this.repDeg = repDeg;
+		}
 		
+		public void increaseRepDeg() {
+			this.repDeg++;
+		}
+		public void decreaseRepDeg() {
+			this.repDeg--;
+		}
+
+		public int getGoalRepDeg() {
+			return goalRepDeg;
+		}
+
+		public void setGoalRepDeg(int goalRepDeg) {
+			this.goalRepDeg = goalRepDeg;
+		}
 	
 	}
