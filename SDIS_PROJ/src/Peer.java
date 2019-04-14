@@ -257,12 +257,12 @@ private void initiateReclaim(double space) {
 		try {
 			storage.addFile(file_path, file.lastModified(), fileID);
 			storage.serializeFileInfo();
-			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 256);
+			ArrayList<Chunk> chunks = splitIntoChunksExternal(file, fileID, 64000);
 			
 		
 				for(Chunk chunk : chunks) {
 					
-					System.out.println("CHUNK N: "+ chunk.getChunkN());
+					System.out.println("CHUNK N: "+ chunk.getChunkN()+ " SIZE: " + chunk.getContent().length);
 					msg = new Message("PUTCHUNK", getVersion(), this.getPeerID(), chunk.getFileID(),chunk.getChunkN(), rep_degree, chunk.getContent());
 					msgByte = msg.sendable();
 					System.out.println(msg.messageToStringPrintable());
@@ -278,6 +278,7 @@ private void initiateReclaim(double space) {
 					else {
 						mdb.sendMessage(msgByte); 
 						System.out.println(msg.messageToStringPrintable());
+						
 					}
 					} 
 					stored = false;
